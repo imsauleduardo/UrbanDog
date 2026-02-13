@@ -1,0 +1,19 @@
+# WordPress core (se maneja via Docker)
+*.sql
+*.sql.gz
+
+# Entorno
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# WordPress uploads
+wp-content/uploads/
+
+# Node
+node_modules/
