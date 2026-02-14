@@ -101,14 +101,14 @@ timeline
 ```mermaid
 flowchart LR
     D[Dueño] -->|Paga 100%| P[Plataforma]
-    P -->|90% al Paseador| W[Paseador]
-    P -->|10% fee| U[UrbanDog]
+    P -->|75% al Paseador| W[Paseador]
+    P -->|25% fee| U[UrbanDog]
 ```
 
 | Concepto | Detalle |
 |----------|---------|
 | **Quién paga** | El dueño de la mascota |
-| **Comisión** | 10% sobre cada transacción |
+| **Comisión** | 25% sobre cada transacción |
 | **Método de pago MVP** | Yape / Plin (QR o número de teléfono) |
 | **Método de pago futuro** | Tarjeta de crédito y débito |
 | **Moneda** | Nuevos Soles (PEN) |
@@ -190,22 +190,27 @@ flowchart TD
     C -->|Sí| E[Visita de Reconocimiento]
     E --> F{Compatible?}
     F -->|No| G[Se cancela sin costo]
-    F -->|Sí| H[Dueño confirma y paga]
-    H --> I[Paseo se realiza]
-    I --> J[Feedback del paseo]
-    J --> K[Calificación bidireccional]
+    F -->|Sí| H[Dueño agenda paseo/s]
+    H --> I[Dueño paga al Yape/Plin de UrbanDog]
+    I --> J{Admin confirma pago?}
+    J -->|Sí| K[Paseo confirmado y agendado]
+    J -->|No| L[Paseo pendiente]
+    K --> M[Paseo se realiza]
+    M --> N[Feedback del paseo]
+    N --> O[Calificación bidireccional]
 ```
 
 > [!IMPORTANT]
-> **La Visita de Reconocimiento es obligatoria** antes del primer paseo con un paseador nuevo. Permite evaluar la compatibilidad entre paseador y mascota. Es presencial y sin costo.
+> **La Visita de Reconocimiento es obligatoria** antes del primer paseo con un paseador nuevo. Es **siempre gratuita**, presencial, y la **agenda el dueño** según la disponibilidad publicada por el paseador. Luego de agendarla, la coordinación se realiza vía WhatsApp.
 
 ### 8.2 Flujo de Pago
 
-1. Dueño selecciona plan (por paseo / semanal / mensual)
+1. Después de la visita de reconocimiento exitosa, el dueño agenda el/los paseo(s)
 2. Se muestra el total según precio del paseador
-3. Dueño paga vía **Yape o Plin** (QR o número de teléfono)
-4. Paseador confirma recepción → se activa el paseo
-5. Plataforma retiene 10% de comisión
+3. Dueño paga al **Yape o Plin de UrbanDog** (cuenta de la marca, no del paseador)
+4. **Administrador confirma la recepción del pago** en la plataforma
+5. Se confirma la agenda de los paseos
+6. Plataforma retiene el 25% de comisión y transfiere el 75% al paseador
 
 ### 8.3 Cancelaciones
 
@@ -266,9 +271,9 @@ flowchart TD
 
 | Componente | Tecnología |
 |------------|-----------|
-| CMS | WordPress 6.7+ |
+| CMS | WordPress 6.9+ |
 | E-commerce | WooCommerce |
-| PHP | 8.3 |
+| PHP | 8.3    |
 | Base de datos | MySQL 8.0 |
 | Entorno local | Docker |
 | Hosting producción | Hosting compartido (provisto) |

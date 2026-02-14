@@ -26,6 +26,10 @@ services:
       WORDPRESS_DB_PASSWORD: 8Lm@P$4zQxN!9kTrW2v
       WORDPRESS_DB_NAME: wp_ud_db
       WORDPRESS_DEBUG: "true"
+      WORDPRESS_CONFIG_EXTRA: |
+        define( 'WP_DEBUG_DISPLAY', false );
+        define( 'WP_DEBUG_LOG', true );
+        @ini_set( 'display_errors', 0 );
     volumes:
       - wordpress_data:/var/www/html
       - ./wp-content/themes:/var/www/html/wp-content/themes

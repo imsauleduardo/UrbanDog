@@ -1,0 +1,9 @@
+<svg width="220" height="50" viewBox="0 0 220 50" xmlns="http://www.w3.org/2000/svg">
+    <!-- UrbanDog Vibrant & Trusted Logo: Inter & Green -->
+    <style>
+        .logo-text { font-family: 'Inter', sans-serif; font-weight: 800; fill: #050A18; letter-spacing: -0.05em; }
+        .logo-dot { fill: #00B67A; }
+    </style>
+    <text x="0" y="36" class="logo-text" font-size="28">URBANDOG</text>
+    <circle cx="178" cy="30" r="6" class="logo-dot" />
+</svg>
