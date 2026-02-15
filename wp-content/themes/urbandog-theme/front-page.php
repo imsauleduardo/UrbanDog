@@ -50,7 +50,7 @@
                             <input type="text" name="distrito" id="hero-distrito-input" autocomplete="off"
                                 placeholder="<?php echo esc_attr($search_placeholder); ?>">
                             <ul id="hero-autocomplete-results" class="ud-autocomplete-results"></ul>
-                            <div id="hero-district-error" class="district-error">
+                            <div id="hero-district-error" class="district-error" style="display: none;">
                                 <i data-lucide="alert-triangle" style="width: 14px; height: 14px;"></i>
                                 <?php _e('No hay cobertura en este momento', 'urbandog'); ?>
                             </div>

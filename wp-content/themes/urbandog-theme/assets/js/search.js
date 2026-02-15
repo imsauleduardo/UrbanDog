@@ -36,10 +36,283 @@ document.addEventListener('DOMContentLoaded', function () {
     // Global State for Filters
     let activeFilters = {
         service_type: 'walk',
-        pet_size: 'mediano',
-        pet_count: 1,
-        dates: []
+        pet_size: [], // No default selection
+        dog_count: 0, // Default to 0
+        puppy_count: 0, // Default to 0
+        dates: [],
+        frequency: 'once',
+        start_date: new Date().toISOString().split('T')[0],
+        time_slots: ['midday'],
+        min_price: 1,
+        max_price: 250
     };
+
+    // --- Pets Modal Logic ---
+    const petsModal = document.getElementById('modal-pets');
+    if (petsModal) {
+        // Multi-select Size Cards
+        petsModal.querySelectorAll('.size-card').forEach(card => {
+            card.addEventListener('click', function () {
+                this.classList.toggle('active');
+                const size = this.dataset.size;
+                if (this.classList.contains('active')) {
+                    if (!activeFilters.pet_size.includes(size)) activeFilters.pet_size.push(size);
+                } else {
+                    activeFilters.pet_size = activeFilters.pet_size.filter(s => s !== size);
+                }
+                console.log('Pet sizes changed:', activeFilters.pet_size);
+                updateFilterLabels();
+            });
+        });
+
+        // Circle Counter Buttons (Dogs/Puppies)
+        petsModal.querySelectorAll('.cnt-btn-circle').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const type = this.dataset.type; // 'dog' or 'puppy'
+                const action = this.dataset.action; // 'plus' or 'minus'
+                const valEl = document.getElementById(`${type}-count-val`);
+                let val = parseInt(valEl.textContent);
+
+                if (action === 'plus') {
+                    val++;
+                } else if (action === 'minus') {
+                    if (val > 0) val--;
+                }
+
+                valEl.textContent = val;
+
+                if (type === 'dog') activeFilters.dog_count = val;
+                else activeFilters.puppy_count = val;
+
+                console.log(`${type} count changed:`, val);
+                updateFilterLabels();
+            });
+        });
+
+        // Apply/Save Button
+        const savePetsBtn = petsModal.querySelector('.modal-footer .btn-primary');
+        if (savePetsBtn) {
+            savePetsBtn.addEventListener('click', function () {
+                console.log('Saving pet filters:', activeFilters);
+                doSearch();
+                closeModal();
+            });
+        }
+    }
+
+    // --- Dates Modal Logic ---
+    const datesModal = document.getElementById('modal-dates');
+    if (datesModal) {
+        // Frequency Switcher
+        datesModal.querySelectorAll('#frequency-selector .segment').forEach(btn => {
+            btn.addEventListener('click', function () {
+                datesModal.querySelectorAll('#frequency-selector .segment').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                activeFilters.frequency = this.dataset.value;
+                console.log('Frequency changed:', activeFilters.frequency);
+                updateFilterLabels();
+            });
+        });
+
+        // Day Selector (Multi-select)
+        datesModal.querySelectorAll('#day-selector .day-segment').forEach(btn => {
+            btn.addEventListener('click', function () {
+                this.classList.toggle('active');
+                const day = this.dataset.day;
+                if (this.classList.contains('active')) {
+                    if (!activeFilters.dates.includes(day)) activeFilters.dates.push(day);
+                } else {
+                    activeFilters.dates = activeFilters.dates.filter(d => d !== day);
+                }
+                console.log('Dates changed:', activeFilters.dates);
+                updateFilterLabels();
+            });
+        });
+
+        // Start Date
+        const startDateInput = document.getElementById('start-date');
+        if (startDateInput) {
+            startDateInput.addEventListener('change', function () {
+                activeFilters.start_date = this.value;
+                console.log('Start date changed:', activeFilters.start_date);
+            });
+        }
+
+        // Time Slots (Multi-select)
+        datesModal.querySelectorAll('#time-selector .segment').forEach(btn => {
+            btn.addEventListener('click', function () {
+                this.classList.toggle('active');
+                const slot = this.dataset.value;
+                if (this.classList.contains('active')) {
+                    if (!activeFilters.time_slots.includes(slot)) activeFilters.time_slots.push(slot);
+                } else {
+                    activeFilters.time_slots = activeFilters.time_slots.filter(s => s !== slot);
+                }
+                console.log('Time slots changed:', activeFilters.time_slots);
+                updateFilterLabels();
+            });
+        });
+
+        // Apply Button
+        const applyDatesBtn = document.getElementById('apply-dates-btn');
+        if (applyDatesBtn) {
+            applyDatesBtn.addEventListener('click', function () {
+                console.log('Applying all date filters:', activeFilters);
+                doSearch();
+                closeModal();
+            });
+        }
+    }
+
+    // --- Search Page Districts Modal ---
+    const modalInput = document.getElementById('input-location');
+    const modalError = document.getElementById('modal-district-error');
+    const applyLocationBtn = document.getElementById('apply-location');
+
+    if (modalInput && modalError) {
+        if (window.udInitAutocomplete) {
+            window.udInitAutocomplete('#input-location', '#modal-autocomplete-results', '#modal-district-error', '#apply-location');
+        }
+    }
+
+    if (applyLocationBtn && modalInput) {
+        applyLocationBtn.addEventListener('click', function () {
+            if (window.udValidateDistrict) {
+                const isValid = window.udValidateDistrict(modalInput, modalError, applyLocationBtn);
+                if (!isValid) {
+                    modalError.style.display = 'flex';
+                    if (applyLocationBtn) applyLocationBtn.classList.add('btn-disabled');
+                    return;
+                }
+            }
+
+            const newLoc = modalInput.value.trim();
+            if (newLoc) {
+                const url = new URL(window.location.href);
+                url.searchParams.set('distrito', newLoc);
+                window.history.pushState({}, '', url);
+                doSearch();
+                closeModal();
+            }
+        });
+    }
+
+    // Modal Interactions: Service
+    document.querySelectorAll('.service-option').forEach(opt => {
+        opt.addEventListener('click', function () {
+            if (this.classList.contains('disabled')) return;
+            document.querySelectorAll('.service-option').forEach(o => o.classList.remove('active'));
+            this.classList.add('active');
+            activeFilters.service_type = this.querySelector('input').value;
+            updateFilterLabels();
+            doSearch();
+        });
+    });
+
+    // --- More Filters Modal (Price Slider & Reset) ---
+    const filtersModal = document.getElementById('modal-filters');
+    if (filtersModal) {
+        const priceMax = document.getElementById('price-max');
+        const priceMaxLabel = document.getElementById('price-max-label');
+        const sliderTrack = document.getElementById('slider-track');
+
+        function updatePriceSlider() {
+            if (!priceMax) return;
+            const maxVal = parseInt(priceMax.value);
+
+            // Update Labels
+            if (priceMaxLabel) priceMaxLabel.textContent = `S/ ${maxVal}`;
+
+            // Update Track (Emerald fill from left)
+            if (sliderTrack) {
+                const percent = ((maxVal - priceMax.min) / (priceMax.max - priceMax.min)) * 100;
+                sliderTrack.style.width = percent + '%';
+            }
+
+            // Update State
+            activeFilters.max_price = maxVal;
+            activeFilters.min_price = 1;
+            updateFilterCount();
+        }
+
+        if (priceMax) {
+            priceMax.addEventListener('input', updatePriceSlider);
+            // Initialize Slider
+            updatePriceSlider();
+        }
+
+        // Reset All Filters
+        const resetBtn = document.getElementById('reset-all-filters');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', function () {
+                // Reset State
+                activeFilters = {
+                    service_type: 'walk',
+                    pet_size: [],
+                    dog_count: 0,
+                    puppy_count: 0,
+                    dates: [],
+                    frequency: 'once',
+                    start_date: new Date().toISOString().split('T')[0],
+                    time_slots: ['midday'],
+                    min_price: 1,
+                    max_price: 250
+                };
+
+                // Sync UI: Pets
+                const petsModal = document.getElementById('modal-pets');
+                if (petsModal) {
+                    petsModal.querySelectorAll('.size-card').forEach(c => c.classList.remove('active'));
+                    const dogVal = document.getElementById('dog-count-val');
+                    const puppyVal = document.getElementById('puppy-count-val');
+                    if (dogVal) dogVal.textContent = '0';
+                    if (puppyVal) puppyVal.textContent = '0';
+                }
+
+                // Sync UI: Dates
+                const datesModal = document.getElementById('modal-dates');
+                if (datesModal) {
+                    datesModal.querySelectorAll('.day-segment, .segment').forEach(s => s.classList.remove('active'));
+                    datesModal.querySelector('.segment[data-value="once"]')?.classList.add('active');
+                    datesModal.querySelector('.segment[data-value="midday"]')?.classList.add('active');
+                    const startDate = document.getElementById('start-date');
+                    if (startDate) startDate.value = activeFilters.start_date;
+                }
+
+                // Sync UI: Price Slider
+                if (priceMax) {
+                    priceMax.value = 250;
+                    updatePriceSlider();
+                }
+
+                // Refresh and Search
+                updateFilterCount();
+                doSearch();
+                console.log('Filters reset complete');
+            });
+        }
+
+        // Apply Button
+        const applyFiltersBtn = document.getElementById('apply-filters-btn');
+        if (applyFiltersBtn) {
+            applyFiltersBtn.addEventListener('click', function () {
+                doSearch();
+                closeModal();
+            });
+        }
+    }
+
+    function updateFilterCount() {
+        let count = 0;
+        if (activeFilters.pet_size.length > 0) count++;
+        if (activeFilters.dog_count > 0 || activeFilters.puppy_count > 0) count++;
+        if (activeFilters.dates.length > 0) count++;
+        if (activeFilters.min_price > 1 || activeFilters.max_price < 250) count++;
+        // service_type is mandatory, so we don't count it as an "active filter" for the badge usually
+
+        const badge = document.getElementById('filter-count-badge');
+        if (badge) badge.textContent = `(${count})`;
+    }
 
     // Function to perform search
     async function doSearch() {
@@ -61,7 +334,13 @@ document.addEventListener('DOMContentLoaded', function () {
             formData.append('zone', distrito);
             formData.append('nonce', ud_ajax.nonce);
             formData.append('service_type', activeFilters.service_type);
-            formData.append('pet_size', activeFilters.pet_size);
+
+            // Multi-select for pet size
+            formData.append('pet_size', activeFilters.pet_size.join(','));
+            formData.append('dog_count', activeFilters.dog_count);
+            formData.append('puppy_count', activeFilters.puppy_count);
+            formData.append('min_price', activeFilters.min_price);
+            formData.append('max_price', activeFilters.max_price);
 
             console.log('Fetching with filters:', distrito, activeFilters);
             const response = await fetch(ud_ajax.url, {
@@ -165,99 +444,79 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // --- Search Page Districts Modal ---
-    const modalInput = document.getElementById('input-location');
-    const modalError = document.getElementById('modal-district-error');
-    const applyLocationBtn = document.getElementById('apply-location');
+    // --- Synchronization Logic ---
+    function updateFilterLabels() {
+        // Service
+        const serviceLabel = document.getElementById('label-service');
+        if (serviceLabel) {
+            const labels = {
+                'walk': 'Paseo de Perros',
+                'boarding': 'Alojamiento',
+                'visit': 'Cuidado en Casa'
+            };
+            serviceLabel.textContent = labels[activeFilters.service_type] || 'Servicio';
+        }
 
-    // Use global validator and autocomplete from main.js if available
-    if (modalInput && modalError) {
-        if (window.udInitAutocomplete) {
-            window.udInitAutocomplete('#input-location', '#modal-autocomplete-results', '#modal-district-error', '#apply-location');
+        // Dates
+        const datesLabel = document.getElementById('label-dates');
+        if (datesLabel) {
+            if (activeFilters.dates.length > 0) {
+                datesLabel.textContent = `Fechas (${activeFilters.dates.length})`;
+            } else {
+                datesLabel.textContent = 'Fechas';
+            }
+        }
+
+        // Pets
+        const petsLabel = document.getElementById('label-pets');
+        if (petsLabel) {
+            const total = activeFilters.dog_count + activeFilters.puppy_count;
+            if (total > 0) {
+                petsLabel.textContent = `Mascotas (${total})`;
+            } else {
+                petsLabel.textContent = 'Mascotas';
+            }
         }
     }
 
-    if (applyLocationBtn && modalInput) {
-        applyLocationBtn.addEventListener('click', function () {
-            if (window.udValidateDistrict) {
-                const isValid = window.udValidateDistrict(modalInput, modalError, applyLocationBtn);
-                if (!isValid) {
-                    modalError.style.display = 'flex';
-                    if (applyLocationBtn) applyLocationBtn.classList.add('btn-disabled');
-                    return;
-                }
-            }
-
-            const newLoc = modalInput.value.trim();
-            if (newLoc) {
-                const url = new URL(window.location.href);
-                url.searchParams.set('distrito', newLoc);
-                window.history.pushState({}, '', url);
-                doSearch();
-                closeModal();
-            }
-        });
-    }
-
-    // Modal Interactions: Service
-    document.querySelectorAll('.service-option').forEach(opt => {
-        opt.addEventListener('click', function () {
-            if (this.classList.contains('disabled')) return;
-            document.querySelectorAll('.service-option').forEach(o => o.classList.remove('active'));
-            this.classList.add('active');
-            activeFilters.service_type = this.querySelector('input').value;
-            doSearch();
-        });
-    });
-
-    // Modal Interactions: Dates
-    document.querySelectorAll('.day-bubble').forEach(btn => {
-        btn.addEventListener('click', function () {
-            this.classList.toggle('active');
-            const day = this.textContent;
-            if (this.classList.contains('active')) {
-                activeFilters.dates.push(day);
-            } else {
-                activeFilters.dates = activeFilters.dates.filter(d => d !== day);
-            }
-            doSearch();
-        });
-    });
-
-    // Modal Interactions: Pet Size
-    document.querySelectorAll('.size-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-
-            // Map text to internal value
-            const text = this.textContent.toLowerCase();
-            if (text.includes('0-7kg')) activeFilters.pet_size = 'pequeño';
-            else if (text.includes('25kg+')) activeFilters.pet_size = 'gigante';
-            else if (text.includes('18-45kg')) activeFilters.pet_size = 'grande';
-            else activeFilters.pet_size = 'mediano';
-
-            doSearch();
-        });
-    });
-
-    // Modal Interactions: Counter
-    document.querySelectorAll('.cnt-btn').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const valEl = this.parentElement.querySelector('.cnt-val');
-            let val = parseInt(valEl.textContent);
-            if (this.textContent === '+') val++;
-            else if (val > 1) val--;
-            valEl.textContent = val;
-            activeFilters.pet_count = val;
-            doSearch();
-        });
-    });
-
-    // Modal Logic
+    // Modal Logic & State Sync
     window.openModal = function (id) {
         const modal = document.getElementById(id);
-        if (modal) modal.style.display = 'flex';
+        if (!modal) return;
+
+        // Sync Modal UI with activeFilters state before showing
+        if (id === 'modal-pets') {
+            modal.querySelectorAll('.size-card').forEach(card => {
+                card.classList.toggle('active', activeFilters.pet_size.includes(card.dataset.size));
+            });
+            const dogVal = document.getElementById('dog-count-val');
+            const puppyVal = document.getElementById('puppy-count-val');
+            if (dogVal) dogVal.textContent = activeFilters.dog_count;
+            if (puppyVal) puppyVal.textContent = activeFilters.puppy_count;
+        }
+
+        if (id === 'modal-dates') {
+            modal.querySelectorAll('#day-selector .day-segment').forEach(btn => {
+                btn.classList.toggle('active', activeFilters.dates.includes(btn.dataset.day));
+            });
+            modal.querySelectorAll('#frequency-selector .segment').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.value === activeFilters.frequency);
+            });
+            modal.querySelectorAll('#time-selector .segment').forEach(btn => {
+                btn.classList.toggle('active', activeFilters.time_slots.includes(btn.dataset.value));
+            });
+            const startDate = document.getElementById('start-date');
+            if (startDate) startDate.value = activeFilters.start_date;
+        }
+
+        if (id === 'modal-service') {
+            modal.querySelectorAll('.service-option').forEach(opt => {
+                const radio = opt.querySelector('input');
+                if (radio) opt.classList.toggle('active', radio.value === activeFilters.service_type);
+            });
+        }
+
+        modal.style.display = 'flex';
     };
 
     window.closeModal = function (e) {
@@ -271,6 +530,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     };
 
-    // Initial search
+    // Initial search and sync
+    updateFilterLabels();
     doSearch();
 });
