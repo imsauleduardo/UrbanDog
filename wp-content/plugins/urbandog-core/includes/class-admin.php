@@ -142,10 +142,22 @@ class UD_Admin
             if (wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['_wpnonce'])), 'ud_walker_approval')) {
                 $user_id = (int) $_POST['ud_walker_user_id'];
                 $action = sanitize_text_field(wp_unslash($_POST['ud_walker_action']));
+                $reason = isset($_POST['ud_rejection_reason']) ? sanitize_textarea_field(wp_unslash($_POST['ud_rejection_reason'])) : '';
 
                 if (in_array($action, ['approved', 'rejected'], true)) {
                     update_user_meta($user_id, 'ud_walker_verification_status', $action);
-                    echo '<div class="notice notice-success"><p>' . esc_html__('Estado actualizado.', 'urbandog') . '</p></div>';
+
+                    if ($action === 'rejected' && $reason) {
+                        update_user_meta($user_id, 'ud_walker_rejection_reason', $reason);
+                    }
+
+                    // Send email notification
+                    self::send_verification_email($user_id, $action, $reason);
+
+                    $message = $action === 'approved'
+                        ? __('Paseador aprobado exitosamente.', 'urbandog')
+                        : __('Paseador rechazado.', 'urbandog');
+                    echo '<div class="notice notice-success"><p>' . esc_html($message) . '</p></div>';
                 }
             }
         }
@@ -211,13 +223,16 @@ class UD_Admin
                                     ?>
                                 </td>
                                 <td>
-                                    <form method="post" style="display: inline;">
+                                    <form method="post" style="display: inline;" onsubmit="return handleWalkerAction(event, this);">
                                         <?php wp_nonce_field('ud_walker_approval'); ?>
                                         <input type="hidden" name="ud_walker_user_id" value="<?php echo (int) $walker->ID; ?>">
+                                        <input type="hidden" name="ud_rejection_reason" id="reason-<?php echo (int) $walker->ID; ?>"
+                                            value="">
                                         <button type="submit" name="ud_walker_action" value="approved" class="button button-primary">
                                             <?php esc_html_e('Aprobar', 'urbandog'); ?>
                                         </button>
-                                        <button type="submit" name="ud_walker_action" value="rejected" class="button">
+                                        <button type="button" class="button"
+                                            onclick="showRejectionModal(<?php echo (int) $walker->ID; ?>)">
                                             <?php esc_html_e('Rechazar', 'urbandog'); ?>
                                         </button>
                                     </form>
@@ -340,5 +355,42 @@ class UD_Admin
             <?php endif; ?>
         </div>
         <?php
+    }
+
+    /**
+     * Send verification email to walker.
+     */
+    private static function send_verification_email(int $user_id, string $status, string $reason = ''): void
+    {
+        $user = get_userdata($user_id);
+        if (!$user) {
+            return;
+        }
+
+        $to = $user->user_email;
+        $site_name = get_bloginfo('name');
+
+        if ($status === 'approved') {
+            $subject = sprintf(__('[%s] Tu cuenta de paseador ha sido aprobada', 'urbandog'), $site_name);
+            $message = sprintf(
+                __("Hola %s,\n\n¡Excelentes noticias! Tu cuenta de paseador en %s ha sido aprobada.\n\nYa puedes empezar a recibir solicitudes de paseo. Ingresa a tu dashboard para configurar tu disponibilidad y precios.\n\nDashboard: %s\n\n¡Bienvenido al equipo UrbanDog!\n\nSaludos,\nEl equipo de %s", 'urbandog'),
+                $user->display_name,
+                $site_name,
+                home_url('/dashboard-paseador/'),
+                $site_name
+            );
+        } else {
+            $subject = sprintf(__('[%s] Actualización sobre tu solicitud de paseador', 'urbandog'), $site_name);
+            $reason_text = $reason ? "\n\nMotivo: " . $reason : '';
+            $message = sprintf(
+                __("Hola %s,\n\nLamentablemente, tu solicitud para ser paseador en %s no ha sido aprobada en este momento.%s\n\nSi tienes preguntas, por favor contáctanos.\n\nSaludos,\nEl equipo de %s", 'urbandog'),
+                $user->display_name,
+                $site_name,
+                $reason_text,
+                $site_name
+            );
+        }
+
+        wp_mail($to, $subject, $message);
     }
 }

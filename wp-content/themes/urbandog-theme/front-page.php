@@ -1,5 +1,6 @@
 <?php get_header(); ?>
 
+
 <main id="primary" class="site-main">
 
     <!-- Hero Section -->
@@ -18,9 +19,9 @@
         <div class="container hero-grid">
             <div class="hero-content">
                 <?php
-                $hero_title = get_post_meta(get_the_ID(), 'ud_hero_title', true) ?: __('Paseos que hacen mover la colita 🐕', 'urbandog');
-                $hero_subtitle = get_post_meta(get_the_ID(), 'ud_hero_subtitle', true) ?: __('Encuentra al paseador ideal en tu distrito y dale a tu mejor amigo la aventura que se merece.', 'urbandog');
-                $search_placeholder = get_post_meta(get_the_ID(), 'ud_hero_placeholder', true) ?: __('Ingresa tu distrito (ej. Los Olivos)', 'urbandog');
+                $hero_title = __('Amor y paseos para tu <span style="color:#10b981">mejor amigo.</span>', 'urbandog');
+                $hero_subtitle = __('Encuentra paseadores verificados y amantes de los animales en tu zona. Seguimiento GPS, reportes detallados y felicidad garantizada en cada caminata.', 'urbandog');
+                $search_placeholder = __('Ingresa tu distrito', 'urbandog');
                 ?>
                 <span class="hero-badge">
                     <svg style="width: 1rem; height: 1rem; margin-right: 0.25rem; fill: currentColor;"
@@ -31,22 +32,19 @@
                     </svg>
                     <?php _e('#1 en Paseos Seguros', 'urbandog'); ?>
                 </span>
-                <h1 class="hero-title"><?php echo esc_html($hero_title); ?></h1>
-                <p class="hero-desc"><?php echo esc_html($hero_subtitle); ?></p>
+                <h1 class="hero-title"><?php echo wp_kses_post($hero_title); ?></h1>
+                <p class="hero-description"><?php echo esc_html($hero_subtitle); ?></p>
 
                 <form id="hero-search" class="hero-search-form" action="<?php echo esc_url(home_url('/buscar/')); ?>"
                     method="get">
                     <div class="search-field">
-                        <svg style="height: 1.5rem; width: 1.5rem; color: #10b981; margin-right: 0.75rem; flex-shrink: 0;"
-                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg class="search-pin-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                             <circle cx="12" cy="10" r="3" />
                         </svg>
-                        <div class="ud-autocomplete-container"
-                            style="position: relative; width: 100%; text-align: left;">
-                            <label
-                                style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; text-align: left;"><?php _e('Tu ubicación', 'urbandog'); ?></label>
+                        <div class="ud-autocomplete-container">
+                            <label class="search-label"><?php _e('TU UBICACIÓN', 'urbandog'); ?></label>
                             <input type="text" name="distrito" id="hero-distrito-input" autocomplete="off"
                                 placeholder="<?php echo esc_attr($search_placeholder); ?>">
                             <ul id="hero-autocomplete-results" class="ud-autocomplete-results"></ul>
@@ -56,16 +54,16 @@
                             </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-slate" style="height: 3rem; min-width: 8rem;">
-                        <svg style="height: 1rem; width: 1rem; margin-right: 0.5rem;" xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
+                    <button type="submit" class="btn btn-search-hero">
+                        <svg class="search-btn-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8" />
                             <line x1="21" y1="21" x2="16.65" y2="16.65" />
                         </svg>
                         <?php _e('Buscar', 'urbandog'); ?>
                     </button>
                 </form>
+
 
                 <div class="hero-social-proof">
                     <div class="avatar-stack">
@@ -81,15 +79,9 @@
             <div class="hero-visual">
                 <div style="position: relative; width: 100%; max-width: 28rem;">
                     <!-- Animated Blobs -->
-                    <div class="absolute top-0 -left-4 w-48 h-48 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"
-                        style="background-color: #d8b4fe; position: absolute; top: 0; left: -1rem; border-radius: 9999px; filter: blur(24px);">
-                    </div>
-                    <div class="absolute top-0 -right-4 w-48 h-48 bg-brand-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"
-                        style="background-color: #6ee7b7; position: absolute; top: 0; right: -1rem; border-radius: 9999px; filter: blur(24px);">
-                    </div>
-                    <div class="absolute -bottom-8 left-10 w-48 h-48 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"
-                        style="background-color: #f9a8d4; position: absolute; bottom: -2rem; left: 2.5rem; border-radius: 9999px; filter: blur(24px);">
-                    </div>
+                    <div class="hero-glow hero-glow-purple"></div>
+                    <div class="hero-glow hero-glow-emerald"></div>
+                    <div class="hero-glow hero-glow-pink"></div>
 
                     <img src="https://images.unsplash.com/photo-1601758124510-52d02ddb7cbd?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
                         alt="Dog walker" class="hero-img">

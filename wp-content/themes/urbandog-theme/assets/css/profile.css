@@ -1,0 +1,402 @@
+/* UrbanDog Profile Page Styles */
+
+.walker-profile-page {
+    background: #f8fafc;
+    min-height: 100vh;
+}
+
+.profile-hero {
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 3rem 0;
+}
+
+.profile-main-info {
+    display: flex;
+    gap: 3rem;
+    align-items: center;
+}
+
+.main-profile-img {
+    width: 200px;
+    height: 200px;
+    border-radius: 1.5rem;
+    object-fit: cover;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.profile-title-section {
+    flex: 1;
+}
+
+.profile-badge-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #ecfdf5;
+    color: #059669;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.profile-name {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    letter-spacing: -0.025em;
+}
+
+.profile-meta-top {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+}
+
+.profile-rating,
+.profile-location {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #64748b;
+    font-size: 1rem;
+}
+
+.rating-val {
+    font-weight: 700;
+    color: #1e293b;
+}
+
+/* Layout Grid */
+.profile-layout-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 3rem;
+    padding: 3rem 0;
+}
+
+.profile-section {
+    background: white;
+    border-radius: 1.25rem;
+    padding: 2rem;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1.5rem;
+}
+
+.bio-text {
+    line-height: 1.7;
+    color: #475569;
+    font-size: 1.125rem;
+}
+
+/* Certifications */
+.profile-certs-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.cert-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid #e2e8f0;
+}
+
+.cert-badge-pill i {
+    width: 14px;
+    height: 14px;
+}
+
+/* Stats Badges */
+.walker-stats-badges {
+    display: flex;
+    gap: 1.5rem;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.stat-badge .label {
+    display: block;
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+}
+
+.stat-badge .value {
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.sizes-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.size-tag {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 0.1rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: #475569;
+}
+
+/* Services List Refined */
+.services-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.service-row-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 1rem;
+    transition: all 0.2s ease;
+}
+
+.service-row-item.promoted-service {
+    border-color: #10b981;
+    background: #f0fdf4;
+}
+
+.service-left {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.service-left i {
+    color: #10b981;
+    background: white;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e2e8f0;
+}
+
+.service-row-item.promoted-service .service-left i {
+    border-color: #10b981;
+}
+
+.service-title-main {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.service-tagline {
+    font-size: 0.813rem;
+    color: #64748b;
+}
+
+/* Map Box */
+.profile-map-box {
+    height: 300px;
+    border-radius: 1rem;
+    background: #e2e8f0;
+    overflow: hidden;
+}
+
+/* Booking Widget */
+.booking-widget {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+.booking-widget.sticky {
+    position: sticky;
+    top: 6rem;
+}
+
+.widget-header {
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+}
+
+.widget-price .from {
+    display: block;
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+}
+
+.widget-price .val {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.form-select,
+.datetime-picker input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid #e2e8f0;
+    font-size: 0.875rem;
+    color: #1e293b;
+    background: #f8fafc;
+}
+
+.datetime-picker {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.btn-full-width {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+.widget-footer-note {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    color: #64748b;
+    font-size: 0.875rem;
+    text-align: center;
+    justify-content: center;
+}
+
+.widget-footer-note i {
+    width: 16px;
+    height: 16px;
+    color: #fbbf24;
+}
+
+/* Counter Input */
+.counter-input-simple {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.counter-input-simple .ctrl-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    transition: transform 0.1s ease;
+}
+
+.counter-input-simple .ctrl-btn:active {
+    transform: scale(0.9);
+}
+
+.counter-input-simple input {
+    width: 40px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #1e293b;
+    border: none !important;
+    background: none !important;
+    box-shadow: none !important;
+}
+
+/* Weekly Package Promo */
+.weekly-package-promo {
+    background: #eff6ff;
+    border: 1px dashed #3b82f6;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-top: 1.5rem;
+}
+
+.weekly-promo-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #1d4ed8;
+    font-weight: 700;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.weekly-promo-header i {
+    width: 18px;
+    height: 18px;
+}
+
+.weekly-promo-text {
+    font-size: 0.813rem;
+    color: #1e40af;
+    line-height: 1.4;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 1024px) {
+    .profile-layout-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-hero {
+        padding: 2rem 1.5rem;
+    }
+
+    .profile-main-info {
+        flex-direction: column;
+        gap: 1.5rem;
+        text-align: center;
+    }
+
+    .profile-meta-top {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .profile-sidebar {
+        order: -1;
+    }
+}

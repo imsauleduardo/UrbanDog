@@ -32,6 +32,22 @@ function ud_theme_scripts()
         }
     }
 
+    // Profile Page Assets
+    if (is_singular('ud_walker_profile')) {
+        wp_enqueue_style('urbandog-profile', get_template_directory_uri() . '/assets/css/profile.css', ['urbandog-main'], '1.0.0');
+        // Profile also needs Leaflet for its map
+        wp_enqueue_style('leaflet-css', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css', [], '1.9.4');
+        wp_enqueue_script('leaflet-js', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', [], '1.9.4', true);
+    }
+    // Dashboard Assets
+    if (is_page_template('page-walker-dashboard.php')) {
+        wp_enqueue_style('urbandog-dashboard', get_template_directory_uri() . '/assets/css/dashboard.css', ['urbandog-main'], '1.0.0');
+    }
+    if (is_page_template('page-owner-dashboard.php')) {
+        wp_enqueue_style('urbandog-dashboard', get_template_directory_uri() . '/assets/css/dashboard.css', ['urbandog-main'], '1.0.0');
+        wp_enqueue_style('urbandog-dashboard-owner', get_template_directory_uri() . '/assets/css/dashboard-owner.css', ['urbandog-dashboard'], '1.0.0');
+    }
+
     // Main Scripts
     wp_enqueue_script('ud-main-script', get_template_directory_uri() . '/assets/js/main.js', ['jquery'], '1.0.0', true);
 
@@ -66,3 +82,37 @@ function ud_theme_setup()
     ]);
 }
 add_action('after_setup_theme', 'ud_theme_setup');
+
+/**
+ * Automatic Page Setup for UrbanDog
+ */
+function ud_ensure_dashboard_pages()
+{
+    // Walker Dashboard
+    $walker_dashboard_slug = 'panel-paseador';
+    if (!get_page_by_path($walker_dashboard_slug)) {
+        wp_insert_post([
+            'post_title' => __('Panel del Paseador', 'urbandog'),
+            'post_name' => $walker_dashboard_slug,
+            'post_status' => 'publish',
+            'post_type' => 'page',
+            'page_template' => 'page-walker-dashboard.php'
+        ]);
+    }
+
+    // Owner Dashboard
+    $owner_dashboard_slug = 'mis-paseos';
+    if (!get_page_by_path($owner_dashboard_slug)) {
+        wp_insert_post([
+            'post_title' => __('Mis Paseos', 'urbandog'),
+            'post_name' => $owner_dashboard_slug,
+            'post_status' => 'publish',
+            'post_type' => 'page',
+            'page_template' => 'page-owner-dashboard.php'
+        ]);
+    }
+}
+add_action('after_switch_theme', 'ud_ensure_dashboard_pages');
+// Also run on init once for safety during development
+add_action('init', 'ud_ensure_dashboard_pages');
+

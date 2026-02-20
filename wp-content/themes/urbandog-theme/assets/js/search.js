@@ -371,7 +371,7 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('Rendering results:', walkers.length);
 
         resultsContainer.innerHTML = walkers.map(walker => `
-                <div class="walker-card" data-id="${walker.id}">
+                <div class="walker-card" data-id="${walker.id}" data-url="${walker.url}">
                     <img src="${walker.image}" class="walker-photo" alt="${walker.name}">
                     <div class="walker-info">
                         <div class="walker-top">
@@ -392,6 +392,19 @@ document.addEventListener('DOMContentLoaded', function () {
             `).join('');
 
         safeRefreshIcons();
+    }
+
+    // Event Delegation for Walker Cards
+    if (resultsContainer) {
+        resultsContainer.addEventListener('click', function (e) {
+            const card = e.target.closest('.walker-card');
+            if (card) {
+                const url = card.dataset.url;
+                if (url) {
+                    window.location.href = url;
+                }
+            }
+        });
     }
 
     function renderEmpty(msg = 'No encontramos paseadores') {

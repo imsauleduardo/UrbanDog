@@ -23,10 +23,37 @@
             </div>
 
             <nav class="nav-menu">
-                <a href="<?php echo esc_url(home_url('/')); ?>" class="nav-link active">Inicio</a>
-                <a href="#" class="nav-link">Buscar Paseador</a>
-                <a href="#" class="nav-link">Ser Paseador</a>
-                <a href="#" class="btn btn-primary" style="margin-left: 1rem;">Reservar Ahora</a>
+                <a href="<?php echo esc_url(home_url('/')); ?>"
+                    class="nav-link <?php echo is_front_page() ? 'active' : ''; ?>"><?php _e('Inicio', 'urbandog'); ?></a>
+                <a href="<?php echo esc_url(home_url('/buscar/')); ?>"
+                    class="nav-link"><?php _e('Buscar Paseador', 'urbandog'); ?></a>
+
+                <?php if (is_user_logged_in()): ?>
+                    <?php if (current_user_can('administrator')): ?>
+                        <a href="<?php echo esc_url(home_url('/panel-paseador/')); ?>"
+                            class="nav-link font-bold text-ud-primary">
+                            <i data-lucide="layout-dashboard"
+                                class="w-4 h-4 inline mr-1"></i><?php _e('Panel Paseador', 'urbandog'); ?>
+                        </a>
+                        <a href="<?php echo esc_url(home_url('/mis-paseos/')); ?>"
+                            class="nav-link"><?php _e('Mi cuenta', 'urbandog'); ?></a>
+                    <?php elseif (UD_Roles::is_walker()): ?>
+                        <a href="<?php echo esc_url(home_url('/panel-paseador/')); ?>"
+                            class="nav-link font-bold text-ud-primary">
+                            <i data-lucide="layout-dashboard"
+                                class="w-4 h-4 inline mr-1"></i><?php _e('Mi cuenta', 'urbandog'); ?>
+                        </a>
+                    <?php else: ?>
+                        <a href="<?php echo esc_url(home_url('/mis-paseos/')); ?>"
+                            class="nav-link"><?php _e('Mi cuenta', 'urbandog'); ?></a>
+                    <?php endif; ?>
+                    <a href="<?php echo wp_logout_url(home_url()); ?>"
+                        class="nav-link text-slate-400 text-sm"><?php _e('Salir', 'urbandog'); ?></a>
+                <?php else: ?>
+                    <a href="#" class="nav-link"><?php _e('Ser Paseador', 'urbandog'); ?></a>
+                    <a href="<?php echo wp_login_url(); ?>" class="btn btn-primary"
+                        style="margin-left: 1rem;"><?php _e('Ingresar', 'urbandog'); ?></a>
+                <?php endif; ?>
             </nav>
 
             <button id="mobile-menu-button" class="mobile-menu-toggle">
@@ -38,8 +65,21 @@
         </div>
         <!-- Mobile Menu -->
         <div id="mobile-menu" class="mobile-nav">
-            <a href="<?php echo esc_url(home_url('/')); ?>">Inicio</a>
-            <a href="#">Buscar Paseador</a>
-            <a href="#">Ser Paseador</a>
+            <a href="<?php echo esc_url(home_url('/')); ?>"><?php _e('Inicio', 'urbandog'); ?></a>
+            <a href="<?php echo esc_url(home_url('/buscar/')); ?>"><?php _e('Buscar Paseador', 'urbandog'); ?></a>
+            <?php if (is_user_logged_in()): ?>
+                <?php if (current_user_can('administrator')): ?>
+                    <a href="<?php echo esc_url(home_url('/panel-paseador/')); ?>"><?php _e('Panel Paseador', 'urbandog'); ?></a>
+                    <a href="<?php echo esc_url(home_url('/mis-paseos/')); ?>"><?php _e('Mi cuenta', 'urbandog'); ?></a>
+                <?php elseif (UD_Roles::is_walker()): ?>
+                    <a href="<?php echo esc_url(home_url('/panel-paseador/')); ?>"><?php _e('Mi cuenta', 'urbandog'); ?></a>
+                <?php else: ?>
+                    <a href="<?php echo esc_url(home_url('/mis-paseos/')); ?>"><?php _e('Mi cuenta', 'urbandog'); ?></a>
+                <?php endif; ?>
+                <a href="<?php echo wp_logout_url(home_url()); ?>"><?php _e('Salir', 'urbandog'); ?></a>
+<?php else: ?>
+                <a href="#"><?php _e('Ser Paseador', 'urbandog'); ?></a>
+                <a href="<?php echo wp_login_url(); ?>"><?php _e('Ingresar', 'urbandog'); ?></a>
+<?php endif; ?>
         </div>
     </header>

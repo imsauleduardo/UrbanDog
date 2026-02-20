@@ -7,8 +7,6 @@
 
 get_header();
 
-get_header();
-
 $distrito = sanitize_text_field($_GET['distrito'] ?? $_GET['location'] ?? '');
 ?>
 
@@ -84,23 +82,29 @@ $distrito = sanitize_text_field($_GET['distrito'] ?? $_GET['location'] ?? '');
             <div class="service-selector">
                 <label class="service-option active">
                     <input type="radio" name="service_type" value="walk" checked>
-                    <i data-lucide="dog"></i>
-                    <span class="service-name">Paseo para perros</span>
-                    <span class="service-desc">En tu vecindario.</span>
+                    <i data-lucide="dog" class="w-8 h-8"></i>
+                    <div class="service-info-col">
+                        <span class="service-name">Paseo para perros</span>
+                        <span class="service-desc">En tu vecindario.</span>
+                    </div>
                 </label>
                 <label class="service-option disabled">
                     <input type="radio" name="service_type" value="boarding" disabled>
+                    <i data-lucide="luggage" class="w-8 h-8"></i>
+                    <div class="service-info-col">
+                        <span class="service-name">Alojamiento</span>
+                        <span class="service-desc">En casa de un cuidador.</span>
+                    </div>
                     <div class="soon-badge"><?php _e('Muy pronto', 'urbandog'); ?></div>
-                    <i data-lucide="luggage"></i>
-                    <span class="service-name">Alojamiento</span>
-                    <span class="service-desc">En casa de un cuidador.</span>
                 </label>
                 <label class="service-option disabled">
                     <input type="radio" name="service_type" value="visit" disabled>
+                    <i data-lucide="home" class="w-8 h-8"></i>
+                    <div class="service-info-col">
+                        <span class="service-name">Cuidado en Casa</span>
+                        <span class="service-desc">En tu hogar.</span>
+                    </div>
                     <div class="soon-badge"><?php _e('Muy pronto', 'urbandog'); ?></div>
-                    <i data-lucide="home"></i>
-                    <span class="service-name">Cuidado en Casa</span>
-                    <span class="service-desc">En tu hogar.</span>
                 </label>
             </div>
         </div>
@@ -177,8 +181,8 @@ $distrito = sanitize_text_field($_GET['distrito'] ?? $_GET['location'] ?? '');
                         'Sáb' => 'S'
                     ];
                     foreach ($days_map as $label => $short): ?>
-                        <button class="day-segment"
-                            data-day="<?php echo strtolower($label); ?>"><?php echo $label; ?></button>
+                            <button class="day-segment"
+                                data-day="<?php echo strtolower($label); ?>"><?php echo $label; ?></button>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -226,17 +230,18 @@ $distrito = sanitize_text_field($_GET['distrito'] ?? $_GET['location'] ?? '');
                         <div class="counter-label-group flex items-center gap-3">
                             <i data-lucide="dog" style="width: 24px; height: 24px; color: #1e293b;"></i>
                             <div class="flex flex-col text-left ml-[10px]">
-                                <span
-                                    class="font-bold text-slate-800 text-sm" style="margin-left: 10px; margin-right: 10px;"><?php _e('Perros', 'urbandog'); ?></span>
-                                <span
-                                    class="text-xs text-slate-500 font-normal" style="margin-left: 10px; margin-right: 10px;"><?php _e('Mayores a 1 año', 'urbandog'); ?></span>
+                                <span class="font-bold text-slate-800 text-sm"
+                                    style="margin-left: 10px; margin-right: 10px;"><?php _e('Perros', 'urbandog'); ?></span>
+                                <span class="text-xs text-slate-500 font-normal"
+                                    style="margin-left: 10px; margin-right: 10px;"><?php _e('Mayores a 1 año', 'urbandog'); ?></span>
                             </div>
                         </div>
                         <div class="counter-controls flex items-center gap-5">
                             <button class="cnt-btn-circle" data-type="dog" data-action="minus">
                                 <i data-lucide="minus"></i>
                             </button>
-                            <span class="cnt-val font-bold text-lg" id="dog-count-val" style="margin-left: 10px; margin-right: 10px;">0</span>
+                            <span class="cnt-val font-bold text-lg" id="dog-count-val"
+                                style="margin-left: 10px; margin-right: 10px;">0</span>
                             <button class="cnt-btn-circle" data-type="dog" data-action="plus">
                                 <i data-lucide="plus"></i>
                             </button>
@@ -247,17 +252,18 @@ $distrito = sanitize_text_field($_GET['distrito'] ?? $_GET['location'] ?? '');
                         <div class="counter-label-group flex items-center gap-3">
                             <i data-lucide="dog" style="width: 20px; height: 20px; color: #64748b;"></i>
                             <div class="flex flex-col text-left ml-[10px]">
-                                <span
-                                    class="font-bold text-slate-800 text-sm" style="margin-left: 10px; margin-right: 10px;"><?php _e('Cachorros', 'urbandog'); ?></span>
-                                <span
-                                    class="text-xs text-slate-500 font-normal" style="margin-left: 10px; margin-right: 10px;"><?php _e('Menores a 1 año', 'urbandog'); ?></span>
+                                <span class="font-bold text-slate-800 text-sm"
+                                    style="margin-left: 10px; margin-right: 10px;"><?php _e('Cachorros', 'urbandog'); ?></span>
+                                <span class="text-xs text-slate-500 font-normal"
+                                    style="margin-left: 10px; margin-right: 10px;"><?php _e('Menores a 1 año', 'urbandog'); ?></span>
                             </div>
                         </div>
                         <div class="counter-controls flex items-center gap-5">
                             <button class="cnt-btn-circle" data-type="puppy" data-action="minus">
                                 <i data-lucide="minus"></i>
                             </button>
-                            <span class="cnt-val font-bold text-lg" id="puppy-count-val" style="margin-left: 10px; margin-right: 10px;">0</span>
+                            <span class="cnt-val font-bold text-lg" id="puppy-count-val"
+                                style="margin-left: 10px; margin-right: 10px;">0</span>
                             <button class="cnt-btn-circle" data-type="puppy" data-action="plus">
                                 <i data-lucide="plus"></i>
                             </button>

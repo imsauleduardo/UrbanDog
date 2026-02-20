@@ -258,13 +258,15 @@ class UD_CPT
         wp_nonce_field('ud_walker_meta', 'ud_walker_meta_nonce');
 
         $fields = [
-            'ud_walker_zone' => ['label' => __('Zona de Cobertura', 'urbandog'), 'type' => 'text'],
+            'ud_walker_zone' => ['label' => __('Zona de Cobertura Principal', 'urbandog'), 'type' => 'text'],
             'ud_walker_lat' => ['label' => __('Latitud', 'urbandog'), 'type' => 'text'],
             'ud_walker_lng' => ['label' => __('Longitud', 'urbandog'), 'type' => 'text'],
-            'ud_walker_radius_km' => ['label' => __('Radio (km)', 'urbandog'), 'type' => 'number'],
-            'ud_walker_schedule' => ['label' => __('Horario Disponible', 'urbandog'), 'type' => 'textarea'],
-            'ud_walker_price_30' => ['label' => __('Precio 30 min (S/.)', 'urbandog'), 'type' => 'number'],
-            'ud_walker_price_60' => ['label' => __('Precio 60 min (S/.)', 'urbandog'), 'type' => 'number'],
+            'ud_walker_radius_km' => ['label' => __('Radio Principal (km)', 'urbandog'), 'type' => 'number'],
+            'ud_walker_extra_coverage' => ['label' => __('Zonas Extra (JSON)', 'urbandog'), 'type' => 'textarea'],
+            'ud_walker_certifications' => ['label' => __('Certificaciones (JSON: ["Badge1", "Badge2"])', 'urbandog'), 'type' => 'textarea'],
+            'ud_walker_custom_schedules' => ['label' => __('Horarios Personalizados (JSON: {"Lun": "08:00-12:00", ...})', 'urbandog'), 'type' => 'textarea'],
+            'ud_walker_price_30' => ['label' => __('Precio Individual 30 min (S/.)', 'urbandog'), 'type' => 'number'],
+            'ud_walker_price_60' => ['label' => __('Precio Individual 60 min (S/.)', 'urbandog'), 'type' => 'number'],
             'ud_walker_price_group_30' => ['label' => __('Precio Grupal 30 min (S/.)', 'urbandog'), 'type' => 'number'],
             'ud_walker_price_group_60' => ['label' => __('Precio Grupal 60 min (S/.)', 'urbandog'), 'type' => 'number'],
             'ud_walker_max_dogs' => ['label' => __('Máx. perros simultáneos', 'urbandog'), 'type' => 'number'],
@@ -401,7 +403,22 @@ class UD_CPT
             'ud_walker_profile' => [
                 'nonce' => 'ud_walker_meta_nonce',
                 'action' => 'ud_walker_meta',
-                'keys' => ['ud_walker_zone', 'ud_walker_lat', 'ud_walker_lng', 'ud_walker_radius_km', 'ud_walker_schedule', 'ud_walker_price_30', 'ud_walker_price_60', 'ud_walker_price_group_30', 'ud_walker_price_group_60', 'ud_walker_max_dogs', 'ud_walker_pet_sizes', 'ud_walker_services'],
+                'keys' => [
+                    'ud_walker_zone',
+                    'ud_walker_lat',
+                    'ud_walker_lng',
+                    'ud_walker_radius_km',
+                    'ud_walker_extra_coverage',
+                    'ud_walker_certifications',
+                    'ud_walker_custom_schedules',
+                    'ud_walker_price_30',
+                    'ud_walker_price_60',
+                    'ud_walker_price_group_30',
+                    'ud_walker_price_group_60',
+                    'ud_walker_max_dogs',
+                    'ud_walker_pet_sizes',
+                    'ud_walker_services'
+                ],
             ],
             'ud_booking' => [
                 'nonce' => 'ud_booking_meta_nonce',

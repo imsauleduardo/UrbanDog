@@ -90,7 +90,7 @@ class UD_Roles
     {
         if (!is_wp_error($user) && $user instanceof WP_User) {
             if (in_array('ud_owner', $user->roles, true)) {
-                return home_url('/dashboard/owner/');
+                return home_url('/mis-paseos/');
             }
             if (in_array('ud_walker', $user->roles, true)) {
                 return home_url('/dashboard/walker/');
@@ -110,10 +110,21 @@ class UD_Roles
         if (is_admin() && !defined('DOING_AJAX')) {
             $user = wp_get_current_user();
             if ($user && !empty($user->roles)) {
-                if (in_array('ud_owner', $user->roles, true) || in_array('ud_walker', $user->roles, true)) {
-                    wp_safe_redirect(home_url('/dashboard/'));
+                // Allow administrators to stay in wp-admin
+                if (in_array('administrator', $user->roles, true)) {
+                    return;
+                }
+
+                if (in_array('ud_walker', $user->roles, true)) {
+                    wp_safe_redirect(home_url('/panel-paseador/'));
                     exit;
                 }
+                if (in_array('ud_owner', $user->roles, true)) {
+                    wp_safe_redirect(home_url('/mis-paseos/'));
+                    exit;
+                }
+                wp_safe_redirect(home_url('/dashboard/'));
+                exit;
             }
         }
     }
@@ -217,7 +228,9 @@ class UD_Roles
     public static function is_owner(int $user_id = 0): bool
     {
         $user = $user_id ? get_userdata($user_id) : wp_get_current_user();
-        return $user && in_array('ud_owner', $user->roles, true);
+        if (!$user)
+            return false;
+        return in_array('ud_owner', $user->roles, true) || in_array('administrator', $user->roles, true);
     }
 
     /**
@@ -226,7 +239,9 @@ class UD_Roles
     public static function is_walker(int $user_id = 0): bool
     {
         $user = $user_id ? get_userdata($user_id) : wp_get_current_user();
-        return $user && in_array('ud_walker', $user->roles, true);
+        if (!$user)
+            return false;
+        return in_array('ud_walker', $user->roles, true) || in_array('administrator', $user->roles, true);
     }
 
     /**
@@ -236,6 +251,9 @@ class UD_Roles
     {
         if (!$user_id) {
             $user_id = get_current_user_id();
+        }
+        if (user_can($user_id, 'administrator')) {
+            return true;
         }
         return get_user_meta($user_id, 'ud_walker_verification_status', true) === 'approved';
     }

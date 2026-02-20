@@ -89,6 +89,9 @@ class UD_Search
                 'rating' => 4.5, // Mock for now
                 'reviews' => 12,  // Mock for now
                 'badges' => ['Experto', 'Verificado'], // Mock
+                'url' => get_permalink($profile->ID),
+                'lat' => get_post_meta($profile->ID, 'ud_walker_lat', true),
+                'lng' => get_post_meta($profile->ID, 'ud_walker_lng', true),
             ];
         }
 

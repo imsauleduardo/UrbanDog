@@ -33,15 +33,24 @@ class UD_Bookings
 
         $owner_id = get_current_user_id();
         $walker_id = (int) ($_POST['walker_id'] ?? 0);
-        $pet_ids = sanitize_text_field($_POST['pet_ids'] ?? ''); // Comma separated
+        $date = sanitize_text_field($_POST['date'] ?? '');
+        $time = sanitize_text_field($_POST['time'] ?? '');
+        $modality = sanitize_text_field($_POST['modality'] ?? 'group');
+        $duration = (int) ($_POST['duration'] ?? 30);
+        $dog_count = (int) ($_POST['dog_count'] ?? 1);
+        $price = (float) ($_POST['price'] ?? 0);
         $notes = sanitize_textarea_field($_POST['notes'] ?? '');
 
         if (!$owner_id || !$walker_id || !UD_Roles::is_owner($owner_id)) {
-            wp_send_json_error(['message' => __('No autorizado.', 'urbandog')]);
+            wp_send_json_error(['message' => __('No autorizado o sesión expirada.', 'urbandog')]);
+        }
+
+        if (empty($date) || empty($time)) {
+            wp_send_json_error(['message' => __('Por favor selecciona fecha y hora.', 'urbandog')]);
         }
 
         $booking_id = wp_insert_post([
-            'post_title' => sprintf(__('Reserva de %s', 'urbandog'), get_userdata($owner_id)->display_name),
+            'post_title' => sprintf(__('Reserva de %s (%s)', 'urbandog'), get_userdata($owner_id)->display_name, $date),
             'post_type' => 'ud_booking',
             'post_status' => 'publish',
             'post_author' => $owner_id,
@@ -52,12 +61,21 @@ class UD_Bookings
             wp_send_json_error(['message' => $booking_id->get_error_message()]);
         }
 
+        // Save Metadata
         update_post_meta($booking_id, 'ud_booking_status', 'pending_request');
         update_post_meta($booking_id, 'ud_booking_owner_id', $owner_id);
         update_post_meta($booking_id, 'ud_booking_walker_id', $walker_id);
-        update_post_meta($booking_id, 'ud_booking_pet_ids', $pet_ids);
+        update_post_meta($booking_id, 'ud_booking_date', $date);
+        update_post_meta($booking_id, 'ud_booking_time', $time);
+        update_post_meta($booking_id, 'ud_booking_modality', $modality);
+        update_post_meta($booking_id, 'ud_booking_duration', $duration);
+        update_post_meta($booking_id, 'ud_booking_dogs', $dog_count);
+        update_post_meta($booking_id, 'ud_booking_price', $price);
 
-        wp_send_json_success(['message' => __('Solicitud enviada.', 'urbandog'), 'booking_id' => $booking_id]);
+        wp_send_json_success([
+            'message' => __('Solicitud enviada con éxito.', 'urbandog'),
+            'booking_id' => $booking_id
+        ]);
     }
 
     /**
