@@ -1,0 +1,359 @@
+/* Registration Styles */
+.ud-registration-wrapper {
+    background-color: #f8fafc;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+.ud-registration-container {
+    background: #ffffff;
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 500px;
+    padding: 2.5rem;
+}
+
+.ud-registration-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.ud-registration-header h1 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.ud-registration-header p {
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+.ud-form-group {
+    margin-bottom: 1.25rem;
+}
+
+.ud-form-group label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #334155;
+    margin-bottom: 0.5rem;
+}
+
+.ud-form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    color: #1e293b;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ud-form-control:focus {
+    outline: none;
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.ud-btn-submit {
+    width: 100%;
+    background-color: #10b981;
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 1rem;
+}
+
+.ud-btn-submit:hover {
+    background-color: #059669;
+}
+
+.ud-btn-submit:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.ud-registration-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.ud-registration-footer a {
+    color: #10b981;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.ud-registration-footer a:hover {
+    text-decoration: underline;
+}
+
+.ud-alert {
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+    display: none;
+}
+
+.ud-alert-error {
+    background-color: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fee2e2;
+}
+
+.ud-alert-success {
+    background-color: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #d1fae5;
+}
+
+/* Walker specific */
+.ud-walker-info {
+    background-color: #f1f5f9;
+    padding: 1.25rem;
+    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.ud-walker-info-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ud-walker-info-text {
+    font-size: 0.8125rem;
+    color: #64748b;
+    line-height: 1.5;
+}
+
+/* Auth Page Specifics */
+.ud-auth-page-wrapper {
+    background-color: #f8fafc;
+    min-height: calc(100vh - 80px);
+    /* Adjust for header */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+}
+
+.ud-auth-container {
+    width: 100%;
+    max-width: 440px;
+}
+
+.ud-auth-card {
+    background: #ffffff;
+    border-radius: 1.25rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+    padding: 3rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.ud-auth-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.ud-auth-icon {
+    width: 48px;
+    height: 48px;
+    color: #10b981;
+    margin-bottom: 1rem;
+}
+
+.ud-auth-subtitle {
+    color: #64748b;
+    margin-top: 0.5rem;
+}
+
+.ud-auth-form .ud-form-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    font-size: 0.875rem;
+}
+
+.ud-remember-me {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: #475569;
+}
+
+.ud-forgot-password {
+    color: #10b981;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.ud-forgot-password:hover {
+    text-decoration: underline;
+}
+
+.ud-auth-footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #f1f5f9;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.ud-auth-footer a {
+    color: #10b981;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.ud-auth-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Password Strength Meter */
+.ud-strength-meter {
+    margin-top: 0.5rem;
+    display: none;
+}
+
+.ud-strength-bar {
+    height: 4px;
+    width: 100%;
+    background-color: #e2e8f0;
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 4px;
+}
+
+.ud-strength-bar::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    transition: width 0.3s, background-color 0.3s;
+}
+
+.ud-strength-text {
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: block;
+}
+
+/* Strength Levels */
+.ud-strength-bar.strength-very-weak::after {
+    width: 20%;
+    background-color: #ef4444;
+}
+
+.ud-strength-bar.strength-weak::after {
+    width: 40%;
+    background-color: #f97316;
+}
+
+.ud-strength-bar.strength-medium::after {
+    width: 60%;
+    background-color: #eab308;
+}
+
+.ud-strength-bar.strength-strong::after {
+    width: 80%;
+    background-color: #22c55e;
+}
+
+.ud-strength-bar.strength-excellent::after {
+    width: 100%;
+    background-color: #10b981;
+}
+
+.ud-strength-text {
+    color: #64748b;
+}
+
+/* Custom File Input Styles */
+.ud-file-custom {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem;
+    border: 1px dashed #cbd5e1;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+    background-color: #f8fafc;
+}
+
+.ud-file-custom:hover {
+    background-color: #f1f5f9;
+    border-color: #10b981;
+}
+
+.ud-file-custom input[type="file"] {
+    display: none;
+}
+
+.ud-file-btn {
+    background-color: #e2e8f0;
+    color: #475569;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.ud-file-name {
+    font-size: 0.8125rem;
+    color: #64748b;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ud-file-custom:hover .ud-file-btn {
+    background-color: #10b981;
+    color: white;
+}
+
+/* Disclaimer Styles */
+.ud-form-disclaimer {
+    font-size: 10px;
+    color: rgb(100, 116, 139);
+    line-height: 1.4;
+    margin-top: 0rem;
+    margin-bottom: 0.5rem;
+    text-align: left;
+}
+
+.ud-form-disclaimer a {
+    color: #64748b;
+    font-weight: 500;
+    text-decoration: underline;
+}
+
+.ud-form-disclaimer a:hover {
+    color: #10b981;
+}

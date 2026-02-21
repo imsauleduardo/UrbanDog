@@ -35,6 +35,7 @@ class UD_CPT
         self::register_booking_cpt();
         self::register_visit_cpt();
         self::register_review_cpt();
+        self::register_transaction_cpt();
     }
 
     /**
@@ -169,6 +170,32 @@ class UD_CPT
     }
 
     /**
+     * CPT: Transacciones de Pago (ud_transaction)
+     */
+    private static function register_transaction_cpt(): void
+    {
+        register_post_type('ud_transaction', [
+            'labels' => [
+                'name' => __('Transacciones', 'urbandog'),
+                'singular_name' => __('Transacción', 'urbandog'),
+                'add_new_item' => __('Nueva Transacción', 'urbandog'),
+                'edit_item' => __('Editar Transacción', 'urbandog'),
+                'view_item' => __('Ver Transacción', 'urbandog'),
+                'all_items' => __('Todas las Transacciones', 'urbandog'),
+                'search_items' => __('Buscar Transacciones', 'urbandog'),
+            ],
+            'public' => false,
+            'show_ui' => true,
+            'show_in_menu' => 'urbandog',
+            'show_in_rest' => true,
+            'supports' => ['title'],
+            'has_archive' => false,
+            'rewrite' => false,
+            'capability_type' => 'post',
+        ]);
+    }
+
+    /**
      * Register taxonomies.
      */
     public static function register_taxonomies(): void
@@ -229,6 +256,9 @@ class UD_CPT
 
         // Review meta
         add_meta_box('ud_review_details', __('Detalles de la Calificación', 'urbandog'), [__CLASS__, 'render_review_meta_box'], 'ud_review', 'normal', 'high');
+
+        // Transaction meta
+        add_meta_box('ud_transaction_details', __('Detalles de la Transacción', 'urbandog'), [__CLASS__, 'render_transaction_meta_box'], 'ud_transaction', 'normal', 'high');
     }
 
     /**
@@ -244,7 +274,7 @@ class UD_CPT
             'ud_pet_age' => ['label' => __('Edad (años)', 'urbandog'), 'type' => 'number'],
             'ud_pet_weight' => ['label' => __('Peso (kg)', 'urbandog'), 'type' => 'number'],
             'ud_pet_special_needs' => ['label' => __('Necesidades Especiales', 'urbandog'), 'type' => 'textarea'],
-            'ud_pet_vaccines' => ['label' => __('Vacunas', 'urbandog'), 'type' => 'textarea'],
+
         ];
 
         self::render_meta_fields($post->ID, $fields);
@@ -362,6 +392,31 @@ class UD_CPT
     }
 
     /**
+     * Render Transaction meta box.
+     */
+    public static function render_transaction_meta_box(WP_Post $post): void
+    {
+        wp_nonce_field('ud_transaction_meta', 'ud_transaction_meta_nonce');
+
+        $fields = [
+            'ud_transaction_booking_id' => ['label' => __('ID de Reserva', 'urbandog'), 'type' => 'number'],
+            'ud_transaction_owner_id' => ['label' => __('ID del Dueño', 'urbandog'), 'type' => 'number'],
+            'ud_transaction_walker_id' => ['label' => __('ID del Paseador', 'urbandog'), 'type' => 'number'],
+            'ud_transaction_amount_total' => ['label' => __('Monto Total (S/.)', 'urbandog'), 'type' => 'number'],
+            'ud_transaction_amount_walker' => ['label' => __('Pago al Paseador (S/.)', 'urbandog'), 'type' => 'number'],
+            'ud_transaction_amount_platform' => ['label' => __('Comisión Plataforma (S/.)', 'urbandog'), 'type' => 'number'],
+            'ud_transaction_status' => ['label' => __('Estado (pending/confirmed/rejected/paid_to_walker)', 'urbandog'), 'type' => 'text'],
+            'ud_transaction_method' => ['label' => __('Método (yape/plin)', 'urbandog'), 'type' => 'text'],
+            'ud_transaction_reference' => ['label' => __('Número de Operación', 'urbandog'), 'type' => 'text'],
+            'ud_transaction_proof_image' => ['label' => __('URL del Comprobante', 'urbandog'), 'type' => 'url'],
+            'ud_transaction_notes' => ['label' => __('Notas del Admin', 'urbandog'), 'type' => 'textarea'],
+            'ud_transaction_rejection_reason' => ['label' => __('Motivo de Rechazo', 'urbandog'), 'type' => 'textarea'],
+        ];
+
+        self::render_meta_fields($post->ID, $fields);
+    }
+
+    /**
      * Helper: render meta fields.
      */
     private static function render_meta_fields(int $post_id, array $fields): void
@@ -398,7 +453,7 @@ class UD_CPT
             'ud_pet' => [
                 'nonce' => 'ud_pet_meta_nonce',
                 'action' => 'ud_pet_meta',
-                'keys' => ['ud_pet_name', 'ud_pet_temperament', 'ud_pet_age', 'ud_pet_weight', 'ud_pet_special_needs', 'ud_pet_vaccines'],
+                'keys' => ['ud_pet_name', 'ud_pet_temperament', 'ud_pet_age', 'ud_pet_weight', 'ud_pet_special_needs'],
             ],
             'ud_walker_profile' => [
                 'nonce' => 'ud_walker_meta_nonce',
@@ -434,6 +489,24 @@ class UD_CPT
                 'nonce' => 'ud_review_meta_nonce',
                 'action' => 'ud_review_meta',
                 'keys' => ['ud_review_author_id', 'ud_review_recipient_id', 'ud_review_booking_id', 'ud_review_rating', 'ud_review_comment'],
+            ],
+            'ud_transaction' => [
+                'nonce' => 'ud_transaction_meta_nonce',
+                'action' => 'ud_transaction_meta',
+                'keys' => [
+                    'ud_transaction_booking_id',
+                    'ud_transaction_owner_id',
+                    'ud_transaction_walker_id',
+                    'ud_transaction_amount_total',
+                    'ud_transaction_amount_walker',
+                    'ud_transaction_amount_platform',
+                    'ud_transaction_status',
+                    'ud_transaction_method',
+                    'ud_transaction_reference',
+                    'ud_transaction_proof_image',
+                    'ud_transaction_notes',
+                    'ud_transaction_rejection_reason',
+                ],
             ],
         ];
 

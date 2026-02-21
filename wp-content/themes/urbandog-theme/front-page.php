@@ -21,7 +21,7 @@
                 <?php
                 $hero_title = __('Amor y paseos para tu <span style="color:#10b981">mejor amigo.</span>', 'urbandog');
                 $hero_subtitle = __('Encuentra paseadores verificados y amantes de los animales en tu zona. Seguimiento GPS, reportes detallados y felicidad garantizada en cada caminata.', 'urbandog');
-                $search_placeholder = __('Ingresa tu distrito', 'urbandog');
+                $search_placeholder = __('Ingresa tu distrito (ej: Los Olivos, Lince, etc)', 'urbandog');
                 ?>
                 <span class="hero-badge">
                     <svg style="width: 1rem; height: 1rem; margin-right: 0.25rem; fill: currentColor;"

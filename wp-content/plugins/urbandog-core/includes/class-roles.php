@@ -25,6 +25,7 @@ class UD_Roles
         add_action('edit_user_profile', [__CLASS__, 'add_profile_fields']);
         add_action('personal_options_update', [__CLASS__, 'save_profile_fields']);
         add_action('edit_user_profile_update', [__CLASS__, 'save_profile_fields']);
+        add_filter('wp_authenticate_user', [__CLASS__, 'restrict_unverified_walker_login'], 10, 2);
     }
 
     /**
@@ -90,10 +91,10 @@ class UD_Roles
     {
         if (!is_wp_error($user) && $user instanceof WP_User) {
             if (in_array('ud_owner', $user->roles, true)) {
-                return home_url('/mis-paseos/');
+                return home_url('/panel-dueno/');
             }
             if (in_array('ud_walker', $user->roles, true)) {
-                return home_url('/dashboard/walker/');
+                return home_url('/panel-paseador/');
             }
             if (in_array('administrator', $user->roles, true)) {
                 return admin_url();
@@ -120,7 +121,7 @@ class UD_Roles
                     exit;
                 }
                 if (in_array('ud_owner', $user->roles, true)) {
-                    wp_safe_redirect(home_url('/mis-paseos/'));
+                    wp_safe_redirect(home_url('/panel-dueno/'));
                     exit;
                 }
                 wp_safe_redirect(home_url('/dashboard/'));
@@ -256,5 +257,30 @@ class UD_Roles
             return true;
         }
         return get_user_meta($user_id, 'ud_walker_verification_status', true) === 'approved';
+    }
+
+    /**
+     * Prevent unverified walkers from logging in.
+     */
+    public static function restrict_unverified_walker_login($user, $password)
+    {
+        if ($user instanceof WP_User && in_array('ud_walker', $user->roles, true)) {
+            $status = get_user_meta($user->ID, 'ud_walker_verification_status', true);
+            if ($status !== 'approved') {
+                return new WP_Error(
+                    'walker_not_verified',
+                    __('Tu cuenta aún está en proceso de verificación. Te notificaremos cuando puedas acceder.', 'urbandog')
+                );
+            }
+        }
+        return $user;
+    }
+
+    /**
+     * Get the Walker Profile CPT ID for a user.
+     */
+    public static function get_walker_profile_id(int $user_id): int
+    {
+        return (int) get_user_meta($user_id, 'ud_walker_profile_id', true);
     }
 }

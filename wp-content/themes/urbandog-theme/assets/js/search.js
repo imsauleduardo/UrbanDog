@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             map = L.map('search-map', {
                 zoomControl: false
-            }).setView([-12.046374, -77.042793], 13);
+            }).setView([-12.046374, -77.042793], 11); // Changed from 13 to 11 for broader initial view
 
             L.tileLayer('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
@@ -40,9 +40,9 @@ document.addEventListener('DOMContentLoaded', function () {
         dog_count: 0, // Default to 0
         puppy_count: 0, // Default to 0
         dates: [],
-        frequency: 'once',
+        frequency: 'weekly',
         start_date: new Date().toISOString().split('T')[0],
-        time_slots: ['midday'],
+        time_slots: ['morning'],
         min_price: 1,
         max_price: 250
     };
@@ -110,6 +110,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 this.classList.add('active');
                 activeFilters.frequency = this.dataset.value;
                 console.log('Frequency changed:', activeFilters.frequency);
+
+                // Toggle Day Selector UI State
+                const daySelector = document.getElementById('day-selector');
+                if (daySelector) {
+                    if (activeFilters.frequency === 'once') {
+                        daySelector.style.opacity = '0.5';
+                        daySelector.style.pointerEvents = 'none';
+                        syncDayFromDate();
+                    } else {
+                        daySelector.style.opacity = '1';
+                        daySelector.style.pointerEvents = 'auto';
+                    }
+                }
+
                 updateFilterLabels();
             });
         });
@@ -135,6 +149,9 @@ document.addEventListener('DOMContentLoaded', function () {
             startDateInput.addEventListener('change', function () {
                 activeFilters.start_date = this.value;
                 console.log('Start date changed:', activeFilters.start_date);
+                if (activeFilters.frequency === 'once') {
+                    syncDayFromDate();
+                }
             });
         }
 
@@ -252,9 +269,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     dog_count: 0,
                     puppy_count: 0,
                     dates: [],
-                    frequency: 'once',
+                    frequency: 'weekly',
                     start_date: new Date().toISOString().split('T')[0],
-                    time_slots: ['midday'],
+                    time_slots: ['morning'],
                     min_price: 1,
                     max_price: 250
                 };
@@ -273,8 +290,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 const datesModal = document.getElementById('modal-dates');
                 if (datesModal) {
                     datesModal.querySelectorAll('.day-segment, .segment').forEach(s => s.classList.remove('active'));
-                    datesModal.querySelector('.segment[data-value="once"]')?.classList.add('active');
-                    datesModal.querySelector('.segment[data-value="midday"]')?.classList.add('active');
+                    datesModal.querySelector('.segment[data-value="weekly"]')?.classList.add('active');
+                    datesModal.querySelector('.segment[data-value="morning"]')?.classList.add('active');
                     const startDate = document.getElementById('start-date');
                     if (startDate) startDate.value = activeFilters.start_date;
                 }
@@ -322,6 +339,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (labelLocation) labelLocation.textContent = distrito || 'Distrito';
 
+        // Check if district is empty
+        if (!distrito) {
+            console.log('No district selected, showing welcome state');
+            renderWelcome();
+            if (map) {
+                map.setView([-12.046374, -77.042793], 11);
+                markers.forEach(m => map.removeLayer(m));
+                markers = [];
+            }
+            return;
+        }
+
         if (typeof ud_ajax === 'undefined') {
             console.error('ERROR: ud_ajax is not defined!');
             renderEmpty('Error interno: Configuración AJAX faltante');
@@ -341,6 +370,10 @@ document.addEventListener('DOMContentLoaded', function () {
             formData.append('puppy_count', activeFilters.puppy_count);
             formData.append('min_price', activeFilters.min_price);
             formData.append('max_price', activeFilters.max_price);
+
+            // New: Dates and Time Slots
+            formData.append('dates', activeFilters.dates.join(','));
+            formData.append('time_slots', activeFilters.time_slots.join(','));
 
             console.log('Fetching with filters:', distrito, activeFilters);
             const response = await fetch(ud_ajax.url, {
@@ -366,13 +399,52 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+
+    // Helper function to generate initials from name
+    function getInitials(name) {
+        if (!name) return '?';
+        const parts = name.trim().split(/\s+/);
+        if (parts.length >= 2) {
+            return (parts[0][0] + parts[1][0]).toUpperCase();
+        }
+        return parts[0][0].toUpperCase();
+    }
+
+    // Helper function to generate background color from name
+    function getAvatarColor(name) {
+        const colors = [
+            '#10b981', '#3b82f6', '#8b5cf6', '#ec4899',
+            '#f59e0b', '#ef4444', '#14b8a6', '#6366f1'
+        ];
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return colors[Math.abs(hash) % colors.length];
+    }
+
     function renderResults(walkers) {
         if (!resultsContainer) return;
         console.log('Rendering results:', walkers.length);
 
-        resultsContainer.innerHTML = walkers.map(walker => `
+        resultsContainer.innerHTML = walkers.map(walker => {
+            // Generate avatar HTML (either image or initials)
+            const avatarHtml = walker.image
+                ? `<img src="${walker.image}" class="walker-photo" alt="${walker.name}">`
+                : `<div class="walker-photo walker-initials-avatar" 
+                        style="background: ${getAvatarColor(walker.name)}; 
+                               display: flex; 
+                               align-items: center; 
+                               justify-content: center; 
+                               color: white; 
+                               font-weight: 700; 
+                               font-size: 1.5rem;">
+                        ${getInitials(walker.name)}
+                   </div>`;
+
+            return `
                 <div class="walker-card" data-id="${walker.id}" data-url="${walker.url}">
-                    <img src="${walker.image}" class="walker-photo" alt="${walker.name}">
+                    ${avatarHtml}
                     <div class="walker-info">
                         <div class="walker-top">
                             <h3 class="walker-name">${walker.name}</h3>
@@ -385,11 +457,13 @@ document.addEventListener('DOMContentLoaded', function () {
                             </div>
                             <div class="walker-reviews" style="color: #64748b; font-size: 0.875rem;">(${walker.reviews || '0'} reseñas)</div>
                             ${(walker.badges || []).map(badge => `<span class="walker-badge" style="background: #f0fdf4; color: #16a34a; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; margin-left: 8px;">${badge}</span>`).join('')}
+                            ${walker.requires_meetgreet ? `<span class="walker-badge badge-mg" style="background: #eff6ff; color: #2563eb; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; margin-left: 8px; display: inline-flex; align-items: center; gap: 4px;"><i data-lucide="shield-check" style="width: 12px; height: 12px;"></i>Meet & Greet Requerido</span>` : ''}
                         </div>
                         <p class="walker-desc" style="color: #475569; font-size: 0.875rem; margin-top: 8px;">Paseador certificado apasionado por los animales. Conozco muy bien la zona de ${walker.zone || 'Lima'} y me encanta jugar con perros.</p>
                     </div>
                 </div>
-            `).join('');
+            `;
+        }).join('');
 
         safeRefreshIcons();
     }
@@ -414,6 +488,24 @@ document.addEventListener('DOMContentLoaded', function () {
                 <i data-lucide="search-x" style="width: 4rem; height: 4rem; margin-bottom: 1.5rem; opacity: 0.5;"></i>
                 <h3 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">${msg}</h3>
                 <p>Intenta buscando en otro distrito o ajustando tus filtros.</p>
+            </div>
+        `;
+        safeRefreshIcons();
+    }
+
+    function renderWelcome() {
+        if (!resultsContainer) return;
+        resultsContainer.innerHTML = `
+            <div style="text-align: center; padding: 5rem 2rem; color: #64748b; background: #fff; border-radius: 1.25rem; border: 2px dashed #e2e8f0; margin: 1rem;">
+                <div style="background: #ecfdf5; width: 5rem; height: 5rem; border-radius: 999px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+                    <i data-lucide="map-pinned" style="width: 2.5rem; height: 2.5rem; color: #10b981;"></i>
+                </div>
+                <h3 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 0.75rem;">¡Hola! Empecemos por tu ubicación</h3>
+                <p style="font-size: 1.125rem; margin-bottom: 2rem; max-width: 22rem; margin-left: auto; margin-right: auto; line-height: 1.6;">Ingresa tu distrito para encontrar a los mejores paseadores verificados cerca de ti.</p>
+                <button class="btn btn-primary" onclick="openModal('modal-location')" style="padding: 1rem 2rem; font-size: 1.125rem;">
+                    <i data-lucide="search" style="width: 1.25rem; height: 1.25rem; margin-right: 0.5rem;"></i>
+                    Seleccionar Distrito
+                </button>
             </div>
         `;
         safeRefreshIcons();
@@ -492,6 +584,31 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function syncDayFromDate() {
+        if (!activeFilters.start_date) return;
+
+        // Convert YYYY-MM-DD to Date object
+        // Use local time to avoid timezone shifts
+        const [year, month, day] = activeFilters.start_date.split('-').map(Number);
+        const dateObj = new Date(year, month - 1, day);
+        const dayIdx = dateObj.getDay(); // 0 (Dom) to 6 (Sab)
+
+        const daysMap = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+        const selectedDay = daysMap[dayIdx];
+
+        activeFilters.dates = [selectedDay];
+        console.log('Synchronized day from date:', selectedDay);
+
+        // Update UI segments
+        const datesModal = document.getElementById('modal-dates');
+        if (datesModal) {
+            datesModal.querySelectorAll('#day-selector .day-segment').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.day === selectedDay);
+            });
+        }
+        updateFilterLabels();
+    }
+
     // Modal Logic & State Sync
     window.openModal = function (id) {
         const modal = document.getElementById(id);
@@ -520,6 +637,18 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             const startDate = document.getElementById('start-date');
             if (startDate) startDate.value = activeFilters.start_date;
+
+            // Sync disabled state
+            const daySelector = document.getElementById('day-selector');
+            if (daySelector) {
+                if (activeFilters.frequency === 'once') {
+                    daySelector.style.opacity = '0.5';
+                    daySelector.style.pointerEvents = 'none';
+                } else {
+                    daySelector.style.opacity = '1';
+                    daySelector.style.pointerEvents = 'auto';
+                }
+            }
         }
 
         if (id === 'modal-service') {
@@ -544,6 +673,9 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // Initial search and sync
+    if (activeFilters.frequency === 'once') {
+        syncDayFromDate();
+    }
     updateFilterLabels();
     doSearch();
 });

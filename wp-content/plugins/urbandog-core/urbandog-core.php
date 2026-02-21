@@ -58,6 +58,7 @@ final class UrbanDog
      */
     private function load_dependencies(): void
     {
+        require_once UD_PLUGIN_DIR . 'includes/class-meetgreet.php';
         require_once UD_PLUGIN_DIR . 'includes/class-roles.php';
         require_once UD_PLUGIN_DIR . 'includes/class-cpt.php';
         require_once UD_PLUGIN_DIR . 'includes/class-admin.php';
@@ -67,6 +68,7 @@ final class UrbanDog
         require_once UD_PLUGIN_DIR . 'includes/class-search.php';
         require_once UD_PLUGIN_DIR . 'includes/class-bookings.php';
         require_once UD_PLUGIN_DIR . 'includes/class-payments.php';
+        require_once UD_PLUGIN_DIR . 'includes/class-ratings.php';
         require_once UD_PLUGIN_DIR . 'includes/class-reviews.php';
         require_once UD_PLUGIN_DIR . 'includes/class-gamification.php';
         require_once UD_PLUGIN_DIR . 'includes/class-home.php';
@@ -90,6 +92,7 @@ final class UrbanDog
     {
         UD_Roles::create_roles();
         UD_CPT::register_post_types();
+        UD_MeetGreet::create_table();
         flush_rewrite_rules();
     }
 
@@ -108,6 +111,7 @@ final class UrbanDog
     {
         UD_Roles::init();
         UD_CPT::init();
+        UD_MeetGreet::init();
         UD_Admin::init();
         UD_Users::init();
         UD_Pets::init();
@@ -115,6 +119,7 @@ final class UrbanDog
         UD_Search::init();
         UD_Bookings::init();
         UD_Payments::init();
+        UD_Ratings::init();
         UD_Reviews::init();
         UD_Gamification::init();
         UD_Home::init();

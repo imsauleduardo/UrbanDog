@@ -52,7 +52,7 @@ class UD_Pets
                 'weight' => (float) get_post_meta($pet->ID, 'ud_pet_weight', true),
                 'temperament' => get_post_meta($pet->ID, 'ud_pet_temperament', true),
                 'needs' => get_post_meta($pet->ID, 'ud_pet_special_needs', true),
-                'vaccines' => get_post_meta($pet->ID, 'ud_pet_vaccines', true),
+
                 'image' => get_the_post_thumbnail_url($pet->ID, 'medium') ?: '',
             ];
         }
@@ -78,7 +78,7 @@ class UD_Pets
         $age = (int) ($_POST['age'] ?? 0);
         $weight = (float) ($_POST['weight'] ?? 0);
         $needs = sanitize_textarea_field($_POST['needs'] ?? '');
-        $vaccines = sanitize_textarea_field($_POST['vaccines'] ?? '');
+
 
         if (empty($name)) {
             wp_send_json_error(['message' => __('El nombre es obligatorio.', 'urbandog')]);
@@ -95,7 +95,7 @@ class UD_Pets
             wp_send_json_error(['message' => $pet_id->get_error_message()]);
         }
 
-        self::save_pet_meta($pet_id, $name, $breed, $temperament, $age, $weight, $needs, $vaccines);
+        self::save_pet_meta($pet_id, $name, $breed, $temperament, $age, $weight, $needs);
         self::handle_pet_image_upload($pet_id);
 
         wp_send_json_success(['message' => __('Mascota agregada.', 'urbandog'), 'pet_id' => $pet_id]);
@@ -126,7 +126,7 @@ class UD_Pets
         $age = (int) ($_POST['age'] ?? 0);
         $weight = (float) ($_POST['weight'] ?? 0);
         $needs = sanitize_textarea_field($_POST['needs'] ?? '');
-        $vaccines = sanitize_textarea_field($_POST['vaccines'] ?? '');
+
 
         if (empty($name)) {
             wp_send_json_error(['message' => __('El nombre es obligatorio.', 'urbandog')]);
@@ -137,7 +137,7 @@ class UD_Pets
             'post_title' => $name,
         ]);
 
-        self::save_pet_meta($pet_id, $name, $breed, $temperament, $age, $weight, $needs, $vaccines);
+        self::save_pet_meta($pet_id, $name, $breed, $temperament, $age, $weight, $needs);
         self::handle_pet_image_upload($pet_id);
 
         wp_send_json_success(['message' => __('Información actualizada.', 'urbandog')]);
@@ -146,7 +146,7 @@ class UD_Pets
     /**
      * Helper to save pet metadata.
      */
-    private static function save_pet_meta($pet_id, $name, $breed, $temperament, $age, $weight, $needs, $vaccines): void
+    private static function save_pet_meta($pet_id, $name, $breed, $temperament, $age, $weight, $needs): void
     {
         update_post_meta($pet_id, 'ud_pet_name', $name);
         update_post_meta($pet_id, 'ud_pet_breed', $breed);
@@ -154,7 +154,6 @@ class UD_Pets
         update_post_meta($pet_id, 'ud_pet_age', $age);
         update_post_meta($pet_id, 'ud_pet_weight', $weight);
         update_post_meta($pet_id, 'ud_pet_special_needs', $needs);
-        update_post_meta($pet_id, 'ud_pet_vaccines', $vaccines);
     }
 
     /**

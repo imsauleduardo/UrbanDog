@@ -27,7 +27,30 @@ $certifications_json = get_post_meta($walker_id, 'ud_walker_certifications', tru
 $certifications = json_decode($certifications_json, true) ?: [];
 $extra_coverage_json = get_post_meta($walker_id, 'ud_walker_extra_coverage', true);
 
-$thumbnail = get_the_post_thumbnail_url($walker_id, 'large') ?: get_template_directory_uri() . '/assets/images/placeholder-walker.jpg';
+$thumbnail_url = get_the_post_thumbnail_url($walker_id, 'large');
+$has_photo = !empty($thumbnail_url);
+
+// Helper function to generate initials
+function ud_get_initials($name)
+{
+    $parts = explode(' ', trim($name));
+    if (count($parts) >= 2) {
+        return strtoupper(substr($parts[0], 0, 1) . substr($parts[1], 0, 1));
+    }
+    return strtoupper(substr($parts[0], 0, 1));
+}
+
+// Helper function to get avatar color based on name
+function ud_get_avatar_color($name)
+{
+    $colors = ['#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#ef4444', '#14b8a6', '#6366f1'];
+    $hash = 0;
+    for ($i = 0; $i < strlen($name); $i++) {
+        $hash = ord($name[$i]) + (($hash << 5) - $hash);
+    }
+    return $colors[abs($hash) % count($colors)];
+}
+
 $lat = get_post_meta($walker_id, 'ud_walker_lat', true);
 $lng = get_post_meta($walker_id, 'ud_walker_lng', true);
 $radius = get_post_meta($walker_id, 'ud_walker_radius_km', true) ?: 0.5;
@@ -40,13 +63,26 @@ $custom_schedules_json = get_post_meta($walker_id, 'ud_walker_custom_schedules',
         <div class="container profile-header-container">
             <div class="profile-main-info">
                 <div class="profile-photo-gallery">
-                    <img src="<?php echo esc_url($thumbnail); ?>" alt="<?php the_title(); ?>" class="main-profile-img">
+                    <?php if ($has_photo): ?>
+                        <img src="<?php echo esc_url($thumbnail_url); ?>" alt="<?php the_title(); ?>"
+                            class="main-profile-img">
+                    <?php else:
+                        $initials = ud_get_initials(get_the_title());
+                        $bg_color = ud_get_avatar_color(get_the_title());
+                        ?>
+                        <div class="main-profile-img"
+                            style="background: <?php echo esc_attr($bg_color); ?>; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 4rem;">
+                            <?php echo esc_html($initials); ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
                 <div class="profile-title-section">
-                    <div class="profile-badge-verified">
-                        <i data-lucide="shield-check"></i>
-                        <?php _e('Paseador Verificado', 'urbandog'); ?>
-                    </div>
+                    <?php if (UD_Roles::is_walker_verified($author_id)): ?>
+                        <div class="profile-badge-verified">
+                            <i data-lucide="shield-check"></i>
+                            <?php _e('Paseador Verificado', 'urbandog'); ?>
+                        </div>
+                    <?php endif; ?>
                     <h1 class="profile-name">
                         <?php the_title(); ?>
                         <?php if (!empty($certifications)): ?>
@@ -61,12 +97,14 @@ $custom_schedules_json = get_post_meta($walker_id, 'ud_walker_custom_schedules',
                         <?php endif; ?>
                     </h1>
                     <div class="profile-meta-top">
+                        <?php
+                        $ratings_data = UD_Ratings::get_user_ratings($author_id);
+                        ?>
                         <div class="profile-rating">
                             <i data-lucide="star" class="fill-current text-amber-400"></i>
-                            <span class="rating-val">4.9</span>
-                            <span class="reviews-count">(
-                                <?php echo rand(10, 50); ?> reseñas)
-                            </span>
+                            <span class="rating-val"><?php echo number_format($ratings_data['average'], 1); ?></span>
+                            <span
+                                class="reviews-count">(<?php printf(_n('%d reseña', '%d reseñas', $ratings_data['count'], 'urbandog'), $ratings_data['count']); ?>)</span>
                         </div>
                         <div class="profile-location">
                             <i data-lucide="map-pin"></i>
@@ -96,14 +134,23 @@ $custom_schedules_json = get_post_meta($walker_id, 'ud_walker_custom_schedules',
                                 class="value"><?php printf(_n('%d perro', '%d perros', $max_dogs, 'urbandog'), $max_dogs); ?></span>
                         </div>
                     <?php endif; ?>
-                    <?php if (!empty($pet_sizes)):
-                        $sizes_arr = explode(',', $pet_sizes);
+                    <?php
+                    $pet_sizes_data = json_decode($pet_sizes, true) ?: [];
+                    if (!empty($pet_sizes_data)):
+                        $size_labels = [
+                            'small' => __('Pequeño', 'urbandog'),
+                            'medium' => __('Mediano', 'urbandog'),
+                            'large' => __('Grande', 'urbandog'),
+                            'giant' => __('Gigante', 'urbandog'),
+                        ];
                         ?>
                         <div class="stat-badge">
                             <span class="label"><?php _e('Tamaños Aceptados', 'urbandog'); ?></span>
                             <div class="sizes-row">
-                                <?php foreach ($sizes_arr as $size): ?>
-                                    <span class="size-tag"><?php echo esc_html(trim($size)); ?></span>
+                                <?php foreach ($pet_sizes_data as $size_key):
+                                    $label = $size_labels[$size_key] ?? $size_key;
+                                    ?>
+                                    <span class="size-tag"><?php echo esc_html($label); ?></span>
                                 <?php endforeach; ?>
                             </div>
                         </div>
@@ -118,6 +165,7 @@ $custom_schedules_json = get_post_meta($walker_id, 'ud_walker_custom_schedules',
                 <div class="services-list">
                     <!-- Group Walk (Default/Promoted) -->
                     <div class="service-row-item promoted-service">
+                        <span class="service-popular-label"><?php _e('Más popular', 'urbandog'); ?></span>
                         <div class="service-left">
                             <i data-lucide="users"></i>
                             <div class="service-info">
@@ -130,9 +178,11 @@ $custom_schedules_json = get_post_meta($walker_id, 'ud_walker_custom_schedules',
                         <div class="service-right">
                             <div class="price-box text-right">
                                 <span class="price-from"><?php _e('Desde', 'urbandog'); ?></span>
-                                <span class="price-amount text-emerald-600 font-bold block">S/
-                                    <?php echo esc_html($price_grp_30); ?></span>
-                                <span class="price-unit text-xs text-slate-500">/ 30 min</span>
+                                <div class="price-main highlighted">
+                                    <span class="currency">S/</span>
+                                    <span class="amount"><?php echo esc_html($price_grp_30); ?></span>
+                                </div>
+                                <span class="price-unit">/ 30 min</span>
                             </div>
                         </div>
                     </div>
@@ -150,9 +200,12 @@ $custom_schedules_json = get_post_meta($walker_id, 'ud_walker_custom_schedules',
                         </div>
                         <div class="service-right">
                             <div class="price-box text-right">
-                                <span class="price-amount font-bold block">S/
-                                    <?php echo esc_html($price_ind_30); ?></span>
-                                <span class="price-unit text-xs text-slate-500">/ 30 min</span>
+                                <span class="price-from"><?php _e('Desde', 'urbandog'); ?></span>
+                                <div class="price-main">
+                                    <span class="currency">S/</span>
+                                    <span class="amount"><?php echo esc_html($price_ind_30); ?></span>
+                                </div>
+                                <span class="price-unit">/ 30 min</span>
                             </div>
                         </div>
                     </div>
@@ -170,214 +223,271 @@ $custom_schedules_json = get_post_meta($walker_id, 'ud_walker_custom_schedules',
                 </p>
                 <div id="profile-map" class="profile-map-box"></div>
             </section>
+
+            <!-- Ratings Section -->
+            <section class="profile-section">
+                <div class="ud-section-header flex items-center gap-3 mb-6">
+                    <h2 class="section-title !mb-0"><?php _e('Reseñas de Clientes', 'urbandog'); ?></h2>
+                    <span class="ud-reviews-count-tag">
+                        <?php echo $ratings_data['count']; ?>
+                    </span>
+                </div>
+
+                <div class="ud-reviews-summary-v2">
+                    <div class="flex items-baseline gap-3">
+                        <div class="ud-partial-stars" style="--rating: <?php echo $ratings_data['average']; ?>;">
+                            <div class="stars-outer">
+                                <?php for ($i = 0; $i < 5; $i++): ?><i data-lucide="star"></i><?php endfor; ?>
+                            </div>
+                            <div class="stars-inner">
+                                <?php for ($i = 0; $i < 5; $i++): ?><i data-lucide="star"></i><?php endfor; ?>
+                            </div>
+                        </div>
+                        <span class="ud-average-score"><?php echo $ratings_data['average']; ?></span>
+                    </div>
+                </div>
+
+                <div class="ud-reviews-list" id="ud-reviews-container">
+                    <?php if (!empty($ratings_data['ratings'])): ?>
+                        <?php foreach ($ratings_data['ratings'] as $index => $review):
+                            $is_hidden = $index >= 5;
+                            ?>
+                            <div class="ud-review-item <?php echo $is_hidden ? 'is-hidden-pagination' : ''; ?>"
+                                data-index="<?php echo $index; ?>">
+                                <div class="ud-review-header">
+                                    <div class="ud-rating-stars">
+                                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                                            <i data-lucide="star" class="<?php echo $i <= $review['score'] ? 'active' : ''; ?> w-3.5 h-3.5"></i>
+                                        <?php endfor; ?>
+                                    </div>
+                                    <?php /* Date hidden as requested */ ?>
+                                </div>
+                                <div class="ud-review-body">
+                                    <?php
+                                    $comment = esc_html($review['comment']);
+                                    $is_long = strlen($comment) > 220;
+                                    ?>
+                                    <div class="ud-review-comment <?php echo $is_long ? 'is-collapsed' : ''; ?>">
+                                        <?php echo strip_tags($comment); ?>
+                                    </div>
+                                    <?php if ($is_long): ?>
+                                        <button class="ud-review-toggle"><?php _e('Ver más', 'urbandog'); ?></button>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="ud-review-meta-bottom mt-4">
+                                    <span class="text-sm font-extrabold text-slate-800"><?php echo esc_html($review['from_user_name']); ?></span>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+
+                        <?php if (count($ratings_data['ratings']) > 5): ?>
+                            <div class="ud-reviews-pagination mt-8 text-center">
+                                <button id="ud-load-more-reviews" class="ud-btn-pagination">
+                                    <?php _e('Ver más reseñas', 'urbandog'); ?>
+                                    <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        <?php endif; ?>
+                    <?php else: ?>
+                        <p class="text-sm text-slate-500 italic">
+                            <?php _e('Aún no tiene reseñas. ¡Sé el primero en calificar su trabajo!', 'urbandog'); ?>
+                        </p>
+                    <?php endif; ?>
+                </div>
+            </section>
         </article>
 
         <!-- Sidebar Column -->
         <aside class="profile-sidebar">
-            <div class="booking-widget sticky">
-                <div class="widget-header">
-                    <div class="widget-price-summary">
-                        <span
-                            class="label text-slate-500 text-xs block mb-1"><?php _e('Total estimado', 'urbandog'); ?></span>
-                        <div class="price-display">
-                            <span class="val text-2xl font-bold text-slate-800" id="booking-total-price">S/
-                                <?php echo esc_html($price_grp_30); ?></span>
+            <?php
+            $requires_mg = UD_MeetGreet::walker_requires_meetgreet($walker_id);
+            $is_logged_in = is_user_logged_in();
+            $user_id = get_current_user_id();
+            $needs_mg = false;
+
+            if ($requires_mg) {
+                if ($is_logged_in) {
+                    $needs_mg = UD_MeetGreet::needs_meetgreet($user_id, $walker_id);
+                } else {
+                    $needs_mg = true; // Invitados siempre necesitan M&G si el paseador lo requiere
+                }
+            }
+            ?>
+            <div class="ud-booking-widget <?php echo $needs_mg ? 'ud-widget-mg' : ''; ?>">
+                <div class="ud-booking-widget-header">
+                    <?php if ($needs_mg): ?>
+                        <div class="ud-mg-header-notice">
+                            <i data-lucide="info" width="40"></i>
+                            <div class="ud-mg-header-content">
+                                <h4 class="ud-mg-header-title"><?php _e('Meet & Greet', 'urbandog'); ?></h4>
+                                <p><?php _e('Este paseador requiere una reunión previa (Meet & Greet) gratuita antes de aceptar nuevos paseos.', 'urbandog'); ?></p>
+                            </div>
                         </div>
-                    </div>
+                    <?php else: ?>
+                        <div class="ud-booking-price-badge">
+                            <span class="amount">S/ <?php echo esc_html($price_grp_30); ?></span>
+                            <span class="label"><?php _e('precio base', 'urbandog'); ?></span>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
-                <div class="widget-form">
-                    <div class="form-grid-2 mb-4" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                        <div class="form-group">
-                            <label
-                                class="text-xs font-semibold text-slate-600 mb-1 block"><?php _e('Modalidad', 'urbandog'); ?></label>
-                            <select class="form-select w-full" id="booking-modality">
-                                <option value="group" selected><?php _e('Grupal', 'urbandog'); ?></option>
-                                <option value="individual"><?php _e('Individual', 'urbandog'); ?></option>
+                <form id="ud-booking-form" class="ud-booking-form">
+                    <input type="hidden" name="booking_type" value="<?php echo $needs_mg ? 'meetgreet' : 'walk'; ?>">
+                    <input type="hidden" name="walker_id" value="<?php echo esc_attr($walker_id); ?>">
+                    
+                    <?php if ($needs_mg && !$is_logged_in): ?>
+                        <!-- Quick Registration for Guests -->
+                        <div class="ud-quick-reg-section">
+                            
+                            <div class="ud-form-row">
+                                <div class="ud-form-group">
+                                    <label for="reg-first-name"><?php _e('Nombre', 'urbandog'); ?></label>
+                                    <input type="text" name="first_name" id="reg-first-name" class="ud-input" placeholder="Ej. Juan" required>
+                                </div>
+                                <div class="ud-form-group">
+                                    <label for="reg-last-name"><?php _e('Apellido', 'urbandog'); ?></label>
+                                    <input type="text" name="last_name" id="reg-last-name" class="ud-input" placeholder="Ej. Pérez" required>
+                                </div>
+                            </div>
+                            <div class="ud-form-group">
+                                <label for="reg-email"><?php _e('Tu Email', 'urbandog'); ?></label>
+                                <input type="email" name="email" id="reg-email" class="ud-input" placeholder="juan@ejemplo.com" required>
+                            </div>
+                            <div class="ud-form-group">
+                                <label for="reg-phone"><?php _e('Teléfono/WhatsApp', 'urbandog'); ?></label>
+                                <input type="tel" name="phone" id="reg-phone" class="ud-input" placeholder="Ej. 987654321" required>
+                            </div>
+                            <div class="ud-form-group">
+                                <label for="reg-password"><?php _e('Crea una Contraseña', 'urbandog'); ?></label>
+                                <input type="password" name="password" id="reg-password" class="ud-input" placeholder="Mín. 8 caracteres" required>
+                            </div>
+                            <div class="ud-form-group">
+                                <label for="reg-password-confirm"><?php _e('Confirma tu Contraseña', 'urbandog'); ?></label>
+                                <input type="password" name="password_confirm" id="reg-password-confirm" class="ud-input" placeholder="Repite tu contraseña" required>
+                            </div>
+                            <input type="hidden" name="is_guest" value="1">
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!$needs_mg): ?>
+                        <div class="ud-form-group">
+                            <label><?php _e('Modalidad del paseo', 'urbandog'); ?></label>
+                            <div class="ud-modality-selector">
+                                <div class="ud-modality-option">
+                                    <input type="radio" name="modality" value="group" id="mod-group" checked>
+                                    <label for="mod-group"
+                                        class="ud-modality-label"><?php _e('Grupal', 'urbandog'); ?></label>
+                                </div>
+                                <div class="ud-modality-option">
+                                    <input type="radio" name="modality" value="individual" id="mod-ind">
+                                    <label for="mod-ind"
+                                        class="ud-modality-label"><?php _e('Individual', 'urbandog'); ?></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ud-form-group">
+                            <label for="booking-duration"><?php _e('Duración', 'urbandog'); ?></label>
+                            <select name="duration" id="booking-duration" class="ud-select">
+                                <option value="30" selected><?php _e('30 minutos', 'urbandog'); ?></option>
+                                <option value="60"><?php _e('60 minutos', 'urbandog'); ?></option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label
-                                class="text-xs font-semibold text-slate-600 mb-1 block"><?php _e('Duración', 'urbandog'); ?></label>
-                            <select class="form-select w-full" id="booking-duration" onchange="calculateTotal()">
-                                <option value="30" selected>30 min</option>
-                                <option value="60">60 min</option>
-                            </select>
+                    <?php endif; ?>
+
+                    <?php if ($is_logged_in): ?>
+                        <div class="ud-form-group">
+                            <label for="pet-selector"><?php _e('Tus Mascotas', 'urbandog'); ?></label>
+                            <?php
+                            $owner_pets = get_posts([
+                                'post_type' => 'ud_pet',
+                                'author' => $user_id,
+                                'numberposts' => -1
+                            ]);
+                            ?>
+                            <?php if (!empty($owner_pets)): ?>
+                                <select name="pets[]" id="pet-selector" class="ud-select" multiple required>
+                                    <?php foreach ($owner_pets as $pet): ?>
+                                        <option value="<?php echo $pet->ID; ?>"><?php echo esc_html($pet->post_title); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <p class="ud-text-xs mt-1 text-slate-500">
+                                    <?php _e('Mantén presionado Ctrl/Cmd para seleccionar varios.', 'urbandog'); ?>
+                                </p>
+                            <?php else: ?>
+                                <div class="ud-alert-mini">
+                                    <p><?php printf(__('No tienes mascotas. <a href="%s">Agrega una aquí</a>.', 'urbandog'), home_url('/panel-dueno/')); ?>
+                                    </p>
+                                </div>
+                            <?php endif; ?>
                         </div>
+                    <?php endif; ?>
+
+                    <?php if ($is_logged_in || !$needs_mg): ?>
+                        <div class="ud-form-group">
+                            <label for="booking-date"><?php _e('Fecha y Hora del M&G', 'urbandog'); ?></label>
+                            <div class="ud-datetime-row" style="display: flex; gap: 0.5rem;">
+                                <input type="date" name="date" id="booking-date" class="ud-input"
+                                    value="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d'); ?>" required>
+                                <select name="time" id="booking-time" class="ud-select" required>
+                                    <option value=""><?php _e('Horario', 'urbandog'); ?></option>
+                                </select>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ($needs_mg): ?>
+                        <input type="hidden" name="modality" value="group">
+                        <input type="hidden" name="duration" value="30">
+                    <?php endif; ?>
+
+                    <div class="ud-booking-summary-box <?php echo $needs_mg ? 'ud-hidden' : ''; ?>"
+                        id="ud-booking-summary">
+                        <div class="ud-summary-row">
+                            <span><?php _e('Subtotal', 'urbandog'); ?></span>
+                            <span>S/ <span id="ud-summary-subtotal">--</span></span>
+                        </div>
+                        <div class="ud-summary-row total">
+                            <span><?php _e('Total Estimado', 'urbandog'); ?></span>
+                            <span>S/ <span id="ud-summary-total">--</span></span>
+                        </div>
+                        <input type="hidden" name="price" id="final-price-input" value="">
                     </div>
 
-                    <div class="form-group mb-4">
-                        <label
-                            class="text-xs font-semibold text-slate-600 mb-1 block"><?php _e('¿Cuántos perros?', 'urbandog'); ?></label>
-                        <div class="counter-input-simple flex items-center justify-between border rounded-lg p-2">
-                            <button type="button" class="ctrl-btn text-emerald-600" onclick="updateDogs(-1)"><i
-                                    data-lucide="minus-circle"></i></button>
-                            <input type="number" id="booking-dog-count"
-                                class="text-center font-bold bg-transparent border-none w-12" value="1" min="1"
-                                max="<?php echo esc_attr($max_dogs); ?>" readonly>
-                            <button type="button" class="ctrl-btn text-emerald-600" onclick="updateDogs(1)"><i
-                                    data-lucide="plus-circle"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="form-group mb-6">
-                        <label
-                            class="text-xs font-semibold text-slate-600 mb-1 block"><?php _e('Fecha y Horario', 'urbandog'); ?></label>
-                        <div class="datetime-compact" style="display: flex; gap: 0.5rem;">
-                            <input type="date" id="booking-date" class="form-input flex-1"
-                                value="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d'); ?>"
-                                onchange="updateTimeSlots(this.value)"
-                                style="padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #e2e8f0;">
-                            <select id="booking-time-slot" class="form-select flex-1">
-                                <option value=""><?php _e('Selecciona fecha', 'urbandog'); ?></option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <button id="submit-booking-btn" class="btn btn-primary btn-full-width mb-4"
-                        onclick="submitBooking()">
-                        <?php _e('Solicitar Paseo', 'urbandog'); ?>
+                    <button type="submit" class="ud-btn-book <?php echo $needs_mg ? 'ud-btn-mg' : ''; ?>">
+                        <i data-lucide="<?php echo $needs_mg ? 'shield-check' : 'calendar'; ?>"></i>
+                        <?php
+                        if ($needs_mg) {
+                            _e('Solicitar Meet & Greet', 'urbandog');
+                        } else {
+                            echo is_user_logged_in() ? __('Solicitar Paseo', 'urbandog') : __('Reservar Paseo', 'urbandog');
+                        }
+                        ?>
                     </button>
-                    <?php wp_nonce_field('ud_booking_nonce', 'ud_booking_nonce_field'); ?>
 
-                    <div class="weekly-package-promo">
-                        <div class="weekly-promo-header">
-                            <i data-lucide="calendar"></i>
-                            <span><?php _e('¡Ahorra con paquetes!', 'urbandog'); ?></span>
-                        </div>
-                        <p class="weekly-promo-text">
-                            <?php _e('Reserva 5 paseos a la semana y obtén un 10% de descuento automático.', 'urbandog'); ?>
-                        </p>
-                    </div>
+                    <div id="ud-booking-alert" class="ud-booking-alert"></div>
+                </form>
 
-                    <p class="widget-footer-note">
-                        <i data-lucide="zap"></i>
-                        <?php _e('No te preocupes, no se te cobrará nada aún.', 'urbandog'); ?>
-                    </p>
-                </div>
+                <p class="widget-footer-note mt-4">
+                    <i data-lucide="zap"></i>
+                    <?php echo $needs_mg ? __('Esta primera reunión dura 15 min y es gratuita.', 'urbandog') : __('No te preocupes, no se te cobrará nada aún.', 'urbandog'); ?>
+                </p>
             </div>
         </aside>
     </div>
 </main>
 
 <script>
-    // Data for dynamic pricing from PHP
-    const pricing = {
-        group: {
-            30: <?php echo esc_js($price_grp_30 ?: 0); ?>,
-            60: <?php echo esc_js($price_grp_60 ?: 0); ?>
-        },
-        individual: {
-            30: <?php echo esc_js($price_ind_30 ?: 0); ?>,
-            60: <?php echo esc_js($price_ind_60 ?: 0); ?>
-        }
-    };
-
-    function updateDogs(delta) {
-        const input = document.getElementById('booking-dog-count');
-        if (!input) return;
-        const max = parseInt(input.getAttribute('max')) || 10;
-        let val = parseInt(input.value) + delta;
-        if (val < 1) val = 1;
-        if (val > max) val = max;
-        input.value = val;
-        calculateTotal();
-    }
-
-    function calculateTotal() {
-        const modalitySelect = document.getElementById('booking-modality');
-        const durationSelect = document.getElementById('booking-duration');
-        const countInput = document.getElementById('booking-dog-count');
-        const priceDisplay = document.getElementById('booking-total-price');
-
-        if (!modalitySelect || !durationSelect || !countInput || !priceDisplay) return;
-
-        const modality = modalitySelect.value;
-        const duration = durationSelect.value;
-        const count = parseInt(countInput.value);
-
-        const unitPrice = pricing[modality][duration];
-        const total = unitPrice * count;
-
-        priceDisplay.innerText = 'S/ ' + total;
-    }
-
-    async function submitBooking() {
-        const btn = document.getElementById('submit-booking-btn');
-        if (!btn || btn.disabled) return;
-
-        const modality = document.getElementById('booking-modality').value;
-        const duration = document.getElementById('booking-duration').value;
-        const dogCount = document.getElementById('booking-dog-count').value;
-        const date = document.getElementById('booking-date').value;
-        const time = document.getElementById('booking-time-slot').value;
-        const nonce = document.getElementById('ud_booking_nonce_field').value;
-        const walkerId = <?php echo $walker_id; ?>;
-
-        if (!date || !time) {
-            alert('<?php _e('Por favor selecciona una fecha y horario disponibles.', 'urbandog'); ?>');
-            return;
-        }
-
-        // Price from display text
-        const priceText = document.getElementById('booking-total-price').innerText;
-        const price = parseFloat(priceText.replace('S/ ', ''));
-
-        btn.disabled = true;
-        btn.innerText = '<?php _e('Enviando...', 'urbandog'); ?>';
-
-        const formData = new FormData();
-        formData.append('action', 'ud_request_walk');
-        formData.append('nonce', nonce);
-        formData.append('walker_id', walkerId);
-        formData.append('date', date);
-        formData.append('time', time);
-        formData.append('modality', modality);
-        formData.append('duration', duration);
-        formData.append('dog_count', dogCount);
-        formData.append('price', price);
-
-        try {
-            const response = await fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
-                method: 'POST',
-                body: formData
-            });
-            const data = await response.json();
-
-            if (data.success) {
-                btn.classList.remove('btn-primary');
-                btn.classList.add('bg-emerald-100', 'text-emerald-700', 'border-emerald-200');
-                btn.innerText = '<?php _e('¡Solicitud Enviada!', 'urbandog'); ?>';
-
-                // Optional: redirect or show modal
-                setTimeout(() => {
-                    alert(data.data.message);
-                }, 100);
-            } else {
-                alert(data.data.message || 'Error al enviar la solicitud.');
-                btn.disabled = false;
-                btn.innerText = '<?php _e('Solicitar Paseo', 'urbandog'); ?>';
-            }
-        } catch (error) {
-            console.error('Booking error:', error);
-            alert('Error de conexión.');
-            btn.disabled = false;
-            btn.innerText = '<?php _e('Solicitar Paseo', 'urbandog'); ?>';
-        }
-    }
-
+    // Data for Map and Schedules (Booking logic moved to bookings.js)
     const customSchedules = <?php echo $custom_schedules_json; ?>;
     const dayMap = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
 
     function updateTimeSlots(dateString) {
         if (!dateString) return;
-
-        // Use T00:00:00 to avoid timezone shifts in local JS Date object
         const date = new Date(dateString + 'T00:00:00');
         const dayName = dayMap[date.getDay()];
         const range = customSchedules[dayName];
-        const select = document.getElementById('booking-time-slot');
-
+        const select = document.getElementById('booking-time');
         if (!select) return;
         select.innerHTML = '';
 
@@ -389,12 +499,10 @@ $custom_schedules_json = get_post_meta($walker_id, 'ud_walker_custom_schedules',
             return;
         }
 
-        // range format expected: "HH:MM-HH:MM"
         try {
             const [start, end] = range.split('-');
             let [startH, startM] = start.split(':').map(Number);
             const [endH, endM] = end.split(':').map(Number);
-
             let currentH = startH;
             let currentM = startM;
             const endTotal = endH * 60 + endM;
@@ -403,39 +511,20 @@ $custom_schedules_json = get_post_meta($walker_id, 'ud_walker_custom_schedules',
                 const timeStr = `${String(currentH).padStart(2, '0')}:${String(currentM).padStart(2, '0')}`;
                 const opt = document.createElement('option');
                 opt.value = timeStr;
-
-                // Format for display
                 let ampm = currentH >= 12 ? 'PM' : 'AM';
                 let displayH = currentH % 12 || 12;
                 opt.innerText = `${displayH}:${String(currentM).padStart(2, '0')} ${ampm}`;
-
                 select.appendChild(opt);
-
-                // Increment by 30 mins
                 currentM += 30;
-                if (currentM >= 60) {
-                    currentH++;
-                    currentM = 0;
-                }
+                if (currentM >= 60) { currentH++; currentM = 0; }
             }
-        } catch (e) {
-            console.error("Error parsing range", range, e);
-        }
+        } catch (e) { console.error("Error parsing range", e); }
     }
 
     document.addEventListener('DOMContentLoaded', function () {
         // Init slots for today
         const dateInput = document.getElementById('booking-date');
         if (dateInput) updateTimeSlots(dateInput.value);
-
-        // Init price calculation
-        calculateTotal();
-
-        // Attach listeners
-        const modalitySelect = document.getElementById('booking-modality');
-        const durationSelect = document.getElementById('booking-duration');
-        if (modalitySelect) modalitySelect.addEventListener('change', calculateTotal);
-        if (durationSelect) durationSelect.addEventListener('change', calculateTotal);
 
         // Map initialization
         if (typeof L !== 'undefined' && document.getElementById('profile-map')) {
@@ -482,6 +571,48 @@ $custom_schedules_json = get_post_meta($walker_id, 'ud_walker_custom_schedules',
                 } catch (e) { console.error("Error parsing extra zones", e); }
             }
         }
+
+        // Reviews Toggle
+        document.querySelectorAll('.ud-review-toggle').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const comment = this.previousElementSibling;
+                if (comment.classList.contains('is-collapsed')) {
+                    comment.classList.remove('is-collapsed');
+                    comment.classList.add('is-expanded');
+                    this.textContent = '<?php _e("Ver menos", "urbandog"); ?>';
+                } else {
+                    comment.classList.add('is-collapsed');
+                    comment.classList.remove('is-expanded');
+                    this.textContent = '<?php _e("Ver más", "urbandog"); ?>';
+                }
+            });
+        });
+
+        // Reviews Pagination
+        const loadMoreBtn = document.getElementById('ud-load-more-reviews');
+        if (loadMoreBtn) {
+            let currentIndex = 5;
+            const itemsPerBatch = 5;
+            const container = document.getElementById('ud-reviews-container');
+            const totalItems = container.querySelectorAll('.ud-review-item').length;
+
+            loadMoreBtn.addEventListener('click', function () {
+                const nextBatch = container.querySelectorAll(`.ud-review-item.is-hidden-pagination`);
+
+                for (let i = 0; i < itemsPerBatch && i < nextBatch.length; i++) {
+                    nextBatch[i].classList.remove('is-hidden-pagination');
+                }
+
+                currentIndex += itemsPerBatch;
+
+                if (currentIndex >= totalItems) {
+                    this.parentElement.style.display = 'none';
+                }
+            });
+        }
+
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     });
 </script>
 

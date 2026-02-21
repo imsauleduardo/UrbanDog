@@ -39,6 +39,10 @@ class UD_Users
         $role = sanitize_text_field($_POST['role'] ?? ''); // ud_owner or ud_walker
         $phone = sanitize_text_field($_POST['phone'] ?? '');
 
+        // New Walker Fields
+        $walker_dni = isset($_POST['walker_dni']) ? sanitize_text_field($_POST['walker_dni']) : '';
+        $walker_linkedin = isset($_POST['walker_linkedin']) ? esc_url_raw($_POST['walker_linkedin']) : '';
+
         if (!is_email($email)) {
             wp_send_json_error(['message' => __('Email inválido.', 'urbandog')]);
         }
@@ -53,6 +57,55 @@ class UD_Users
 
         if (!in_array($role, ['ud_owner', 'ud_walker'], true)) {
             wp_send_json_error(['message' => __('Rol inválido.', 'urbandog')]);
+        }
+
+        // Handle File Uploads for Walkers
+        $doc_dni_url = '';
+        $doc_antecedentes_url = '';
+        $doc_domicilio_url = '';
+
+        if ($role === 'ud_walker') {
+            if (!empty($_FILES['doc_dni']['name'])) {
+                require_once(ABSPATH . 'wp-admin/includes/file.php');
+                $uploadedfile = $_FILES['doc_dni'];
+                $upload_overrides = ['test_form' => false];
+                $movefile = wp_handle_upload($uploadedfile, $upload_overrides);
+                if ($movefile && !isset($movefile['error'])) {
+                    $doc_dni_url = $movefile['url'];
+                } else {
+                    wp_send_json_error(['message' => __('Error al subir DNI: ', 'urbandog') . $movefile['error']]);
+                }
+            } else {
+                wp_send_json_error(['message' => __('El documento DNI es obligatorio.', 'urbandog')]);
+            }
+
+            if (!empty($_FILES['doc_antecedentes']['name'])) {
+                require_once(ABSPATH . 'wp-admin/includes/file.php');
+                $uploadedfile = $_FILES['doc_antecedentes'];
+                $upload_overrides = ['test_form' => false];
+                $movefile = wp_handle_upload($uploadedfile, $upload_overrides);
+                if ($movefile && !isset($movefile['error'])) {
+                    $doc_antecedentes_url = $movefile['url'];
+                } else {
+                    wp_send_json_error(['message' => __('Error al subir antecedentes: ', 'urbandog') . $movefile['error']]);
+                }
+            } else {
+                wp_send_json_error(['message' => __('El documento de antecedentes es obligatorio.', 'urbandog')]);
+            }
+
+            if (!empty($_FILES['doc_domicilio']['name'])) {
+                require_once(ABSPATH . 'wp-admin/includes/file.php');
+                $uploadedfile = $_FILES['doc_domicilio'];
+                $upload_overrides = ['test_form' => false];
+                $movefile = wp_handle_upload($uploadedfile, $upload_overrides);
+                if ($movefile && !isset($movefile['error'])) {
+                    $doc_domicilio_url = $movefile['url'];
+                } else {
+                    wp_send_json_error(['message' => __('Error al subir comprobante de domicilio: ', 'urbandog') . $movefile['error']]);
+                }
+            } else {
+                wp_send_json_error(['message' => __('El comprobante de domicilio es obligatorio.', 'urbandog')]);
+            }
         }
 
         $user_id = wp_create_user($email, $password, $email);
@@ -74,6 +127,11 @@ class UD_Users
 
         if ($role === 'ud_walker') {
             update_user_meta($user_id, 'ud_walker_verification_status', 'pending');
+            update_user_meta($user_id, 'ud_walker_dni', $walker_dni);
+            update_user_meta($user_id, 'ud_walker_linkedin', $walker_linkedin);
+            update_user_meta($user_id, 'ud_walker_doc_dni', $doc_dni_url);
+            update_user_meta($user_id, 'ud_walker_doc_antecedentes', $doc_antecedentes_url);
+            update_user_meta($user_id, 'ud_walker_doc_domicilio', $doc_domicilio_url);
 
             // Create a shadow Walker Profile CPT for this user
             $profile_id = wp_insert_post([
@@ -84,18 +142,22 @@ class UD_Users
             ]);
 
             update_user_meta($user_id, 'ud_walker_profile_id', $profile_id);
+
+            // Do NOT log in walkers automatically
+            wp_send_json_success([
+                'message' => __('Registro exitoso. Tu cuenta está en proceso de verificación.', 'urbandog'),
+                'redirect' => home_url('/registro-pendiente/'),
+            ]);
+        } else {
+            // Log the user in (Owners only)
+            wp_set_current_user($user_id);
+            wp_set_auth_cookie($user_id);
+
+            wp_send_json_success([
+                'message' => __('Registro exitoso.', 'urbandog'),
+                'redirect' => home_url('/panel-dueno/'),
+            ]);
         }
-
-        // Log the user in
-        wp_set_current_user($user_id);
-        wp_set_auth_cookie($user_id);
-
-        $redirect = $role === 'ud_owner' ? home_url('/dashboard/owner/') : home_url('/dashboard/walker/');
-
-        wp_send_json_success([
-            'message' => __('Registro exitoso.', 'urbandog'),
-            'redirect' => $redirect,
-        ]);
     }
 
     /**

@@ -1,0 +1,301 @@
+/* Pets Management Styles */
+.ud-pets-section {
+    margin-top: 2rem;
+}
+
+.ud-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.ud-btn-add {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #10b981;
+    color: white;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: background-color 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.ud-btn-add:hover {
+    background-color: #059669;
+}
+
+.ud-pets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.ud-pet-card {
+    background: white;
+    border-radius: 1rem;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+}
+
+.ud-pet-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.ud-pet-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    background-color: #f1f5f9;
+}
+
+.ud-pet-no-image {
+    width: 100%;
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f1f5f9;
+    color: #94a3b8;
+}
+
+.ud-pet-info {
+    padding: 1.25rem;
+}
+
+.ud-pet-name {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}
+
+.ud-pet-breed {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-bottom: 0.75rem;
+}
+
+.ud-pet-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.ud-pet-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8125rem;
+    color: #475569;
+    background: #f8fafc;
+    padding: 0.25rem 0.625rem;
+    border-radius: 2rem;
+}
+
+.ud-pet-actions {
+    display: flex;
+    gap: 0.5rem;
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 10;
+}
+
+.ud-btn-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ud-btn-icon:hover {
+    color: #1e293b;
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+
+.ud-btn-icon.delete:hover {
+    color: #ef4444;
+    border-color: #fee2e2;
+    background: #fef2f2;
+}
+
+/* Modal Styles */
+/* Using ID selector + !important to strictly override dashboard.css conflicts */
+#ud-pet-modal.ud-modal {
+    display: none;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    /* Critical override */
+    border-radius: 0 !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    z-index: 1000 !important;
+    backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    box-shadow: none !important;
+    margin: 0 !important;
+    transform: none !important;
+}
+
+#ud-pet-modal.ud-modal.active {
+    display: flex !important;
+}
+
+#ud-pet-modal .ud-modal-content {
+    background: white;
+    width: 100%;
+    max-width: 550px;
+    border-radius: 1.25rem;
+    /* Matches dashboard cards */
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    padding: 2rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    margin: auto;
+    /* Ensure centering */
+}
+
+/* Modal Header */
+.ud-modal-header {
+    margin-bottom: 2rem;
+}
+
+.ud-modal-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.ud-modal-close {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #94a3b8;
+    transition: color 0.2s;
+}
+
+.ud-modal-close:hover {
+    color: #475569;
+}
+
+.ud-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 480px) {
+    .ud-form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+.ud-image-upload-preview {
+    width: 100%;
+    height: 200px;
+    border: 2px dashed #e2e8f0;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    background: #f8fafc;
+}
+
+.ud-image-upload-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ud-image-upload-preview .placeholder {
+    text-align: center;
+    color: #94a3b8;
+}
+
+.ud-image-upload-preview .placeholder i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Form Styles Match for Modal (Premium Style) */
+#ud-pet-form .ud-form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    font-size: 0.9375rem;
+    color: #0f172a;
+    background-color: #fff;
+    transition: all 0.2s;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+#ud-pet-form .ud-form-control:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+#ud-pet-form label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 0.5rem;
+}
+
+#ud-pet-form .ud-btn-submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #4f46e5;
+    /* Primary */
+    color: #fff;
+    border: none;
+    font-size: 0.9375rem;
+    margin-top: 1.5rem;
+}
+
+#ud-pet-form .ud-btn-submit:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}

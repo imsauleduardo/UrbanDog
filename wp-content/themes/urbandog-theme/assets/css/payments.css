@@ -1,0 +1,366 @@
+/* UrbanDog Payment System Styles */
+
+/* Payment Card */
+.ud-payment-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 24px;
+    color: white;
+    margin-bottom: 24px;
+}
+
+.ud-payment-card h3 {
+    margin-bottom: 16px;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* Payment Form */
+.ud-payment-form {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.ud-payment-method-selector {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.ud-payment-method-option {
+    position: relative;
+}
+
+.ud-payment-method-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+}
+
+.ud-payment-method-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.ud-payment-method-option input[type="radio"]:checked + .ud-payment-method-label {
+    border-color: #10b981;
+    background: #f0fdf4;
+}
+
+.ud-payment-method-label:hover {
+    border-color: #10b981;
+}
+
+.ud-payment-method-logo {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 12px;
+    object-fit: contain;
+}
+
+.ud-payment-method-name {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+/* QR Code Display */
+.ud-qr-code-container {
+    text-align: center;
+    padding: 24px;
+    background: #f9fafb;
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+
+.ud-qr-code-image {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 16px;
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.ud-payment-amount {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #10b981;
+    margin-bottom: 8px;
+}
+
+.ud-payment-instructions {
+    font-size: 0.875rem;
+    color: #6b7280;
+    line-height: 1.6;
+}
+
+/* Image Upload */
+.ud-image-upload-area {
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 16px;
+}
+
+.ud-image-upload-area:hover {
+    border-color: #10b981;
+    background: #f0fdf4;
+}
+
+.ud-image-upload-area.has-image {
+    border-style: solid;
+    border-color: #10b981;
+}
+
+.ud-upload-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 12px;
+    color: #9ca3af;
+}
+
+.ud-image-preview {
+    margin-top: 16px;
+    text-align: center;
+}
+
+.ud-image-preview img {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Admin Payment Management */
+.ud-payments-table {
+    width: 100%;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.ud-payments-table thead {
+    background: #f9fafb;
+}
+
+.ud-payments-table th {
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ud-payments-table td {
+    padding: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.ud-payment-row:hover {
+    background: #f9fafb;
+}
+
+.ud-proof-thumbnail {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.ud-proof-thumbnail:hover {
+    transform: scale(1.1);
+}
+
+.ud-payment-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ud-admin-notes,
+.ud-rejection-reason {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    margin-bottom: 8px;
+    resize: vertical;
+}
+
+/* Transaction Status Badges */
+.ud-transaction-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ud-transaction-status.awaiting {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.ud-transaction-status.pending {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.ud-transaction-status.confirmed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.ud-transaction-status.rejected {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.ud-transaction-status.paid {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+/* Walker Earnings Section */
+.ud-earnings-summary {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 12px;
+    padding: 24px;
+    color: white;
+    margin-bottom: 24px;
+}
+
+.ud-earnings-total {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.ud-earnings-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+.ud-earnings-breakdown {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.ud-earnings-item {
+    text-align: center;
+}
+
+.ud-earnings-item-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.ud-earnings-item-label {
+    font-size: 0.75rem;
+    opacity: 0.8;
+    margin-top: 4px;
+}
+
+.ud-transaction-history {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.ud-transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.ud-transaction-item:last-child {
+    border-bottom: none;
+}
+
+.ud-transaction-date {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.ud-transaction-amount {
+    font-weight: 600;
+    color: #10b981;
+}
+
+/* Notifications */
+.ud-notification {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ud-payment-method-selector {
+        grid-template-columns: 1fr;
+    }
+    
+    .ud-earnings-breakdown {
+        grid-template-columns: 1fr;
+    }
+    
+    .ud-payments-table {
+        font-size: 0.875rem;
+    }
+    
+    .ud-payments-table th,
+    .ud-payments-table td {
+        padding: 12px 8px;
+    }
+}
+
+/* Loading Animation */
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}

@@ -52,11 +52,28 @@ class UD_Admin
      */
     public static function enqueue_admin_assets(string $hook): void
     {
+        // Only on UrbanDog admin pages
         if (strpos($hook, 'urbandog') === false) {
             return;
         }
 
-        wp_enqueue_style('ud-admin', UD_PLUGIN_URL . 'assets/css/admin.css', [], UD_VERSION);
+        wp_enqueue_style('urbandog-admin', plugin_dir_url(__DIR__) . 'assets/css/admin.css', [], '1.0.0');
+
+        // Enqueue payment scripts on payment confirmation page
+        if (strpos($hook, 'urbandog_page_urbandog-payments') !== false) {
+            wp_enqueue_script(
+                'urbandog-payments-admin',
+                get_template_directory_uri() . '/assets/js/payments.js',
+                ['jquery'],
+                '1.0.0',
+                true
+            );
+
+            wp_localize_script('urbandog-payments-admin', 'udPayments', [
+                'ajaxUrl' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('ud_admin_nonce')
+            ]);
+        }
     }
 
     /**
@@ -197,6 +214,9 @@ class UD_Admin
                                 <?php esc_html_e('LinkedIn', 'urbandog'); ?>
                             </th>
                             <th>
+                                <?php esc_html_e('Documentos', 'urbandog'); ?>
+                            </th>
+                            <th>
                                 <?php esc_html_e('Acciones', 'urbandog'); ?>
                             </th>
                         </tr>
@@ -219,7 +239,27 @@ class UD_Admin
                                 <td>
                                     <?php
                                     $linkedin = get_user_meta($walker->ID, 'ud_walker_linkedin', true);
-                                    echo $linkedin ? '<a href="' . esc_url($linkedin) . '" target="_blank">Ver</a>' : '—';
+                                    echo $linkedin ? '<a href="' . esc_url($linkedin) . '" target="_blank">LinkedIn</a>' : '—';
+                                    ?>
+                                </td>
+                                <td>
+                                    <?php
+                                    $doc_dni = get_user_meta($walker->ID, 'ud_walker_doc_dni', true);
+                                    $antecedentes = get_user_meta($walker->ID, 'ud_walker_doc_antecedentes', true);
+                                    $domicilio = get_user_meta($walker->ID, 'ud_walker_doc_domicilio', true);
+
+                                    if ($doc_dni) {
+                                        printf('<a href="%s" target="_blank" class="button button-small" style="margin-bottom: 5px; display: inline-block; background: #2271b1; color: white; border: none;">%s</a><br>', esc_url($doc_dni), __('Ver DNI', 'urbandog'));
+                                    }
+                                    if ($antecedentes) {
+                                        printf('<a href="%s" target="_blank" class="button button-small" style="margin-bottom: 5px; display: inline-block;">%s</a><br>', esc_url($antecedentes), __('Antecedentes', 'urbandog'));
+                                    }
+                                    if ($domicilio) {
+                                        printf('<a href="%s" target="_blank" class="button button-small">%s</a>', esc_url($domicilio), __('Certificado Domicilio', 'urbandog'));
+                                    }
+                                    if (!$doc_dni && !$antecedentes && !$domicilio) {
+                                        echo '—';
+                                    }
                                     ?>
                                 </td>
                                 <td>
@@ -251,108 +291,200 @@ class UD_Admin
      */
     public static function render_payment_confirmation(): void
     {
-        // Handle payment confirmation
-        if (isset($_POST['ud_confirm_booking_id'], $_POST['_wpnonce'])) {
-            if (wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['_wpnonce'])), 'ud_payment_confirm')) {
-                $booking_id = (int) $_POST['ud_confirm_booking_id'];
-                update_post_meta($booking_id, 'ud_booking_status', 'payment_confirmed');
-
-                // Calculate commission
-                $price = (float) get_post_meta($booking_id, 'ud_booking_price', true);
-                $commission = round($price * 0.25, 2);
-                update_post_meta($booking_id, 'ud_booking_commission', $commission);
-
-                echo '<div class="notice notice-success"><p>' . esc_html__('Pago confirmado.', 'urbandog') . '</p></div>';
-            }
-        }
-
-        // Get bookings pending payment
-        $pending_payments = get_posts([
-            'post_type' => 'ud_booking',
+        // Get pending transactions (status = 'pending')
+        $pending_transactions = get_posts([
+            'post_type' => 'ud_transaction',
             'post_status' => 'publish',
-            'meta_key' => 'ud_booking_status',
-            'meta_value' => 'pending_payment',
+            'meta_key' => 'ud_transaction_status',
+            'meta_value' => 'pending',
             'numberposts' => -1,
+            'orderby' => 'date',
+            'order' => 'DESC'
+        ]);
+
+        // Get confirmed transactions (for "mark as paid" section)
+        $confirmed_transactions = get_posts([
+            'post_type' => 'ud_transaction',
+            'post_status' => 'publish',
+            'meta_key' => 'ud_transaction_status',
+            'meta_value' => 'confirmed',
+            'numberposts' => -1,
+            'orderby' => 'date',
+            'order' => 'DESC'
         ]);
         ?>
         <div class="wrap">
-            <h1>💳
-                <?php esc_html_e('Confirmar Pagos (Yape/Plin)', 'urbandog'); ?>
-            </h1>
+            <h1>💳 <?php esc_html_e('Gestión de Pagos', 'urbandog'); ?></h1>
+            <p><?php esc_html_e('Revisa y confirma los pagos enviados por los clientes.', 'urbandog'); ?></p>
 
-            <?php if (empty($pending_payments)): ?>
-                <p>
-                    <?php esc_html_e('No hay pagos pendientes de confirmación.', 'urbandog'); ?>
-                </p>
+            <!-- Pending Payments Section -->
+            <h2><?php esc_html_e('Pagos Pendientes de Confirmación', 'urbandog'); ?></h2>
+
+            <?php if (empty($pending_transactions)): ?>
+                <div class="notice notice-info">
+                    <p><?php esc_html_e('No hay pagos pendientes de confirmación.', 'urbandog'); ?></p>
+                </div>
             <?php else: ?>
                 <table class="widefat striped">
                     <thead>
                         <tr>
-                            <th>
-                                <?php esc_html_e('ID Reserva', 'urbandog'); ?>
-                            </th>
-                            <th>
-                                <?php esc_html_e('Dueño', 'urbandog'); ?>
-                            </th>
-                            <th>
-                                <?php esc_html_e('Paseador', 'urbandog'); ?>
-                            </th>
-                            <th>
-                                <?php esc_html_e('Fecha Paseo', 'urbandog'); ?>
-                            </th>
-                            <th>
-                                <?php esc_html_e('Monto (S/.)', 'urbandog'); ?>
-                            </th>
-                            <th>
-                                <?php esc_html_e('Comisión 25%', 'urbandog'); ?>
-                            </th>
-                            <th>
-                                <?php esc_html_e('Acción', 'urbandog'); ?>
-                            </th>
+                            <th><?php esc_html_e('ID', 'urbandog'); ?></th>
+                            <th><?php esc_html_e('Dueño', 'urbandog'); ?></th>
+                            <th><?php esc_html_e('Paseador', 'urbandog'); ?></th>
+                            <th><?php esc_html_e('Fecha Paseo', 'urbandog'); ?></th>
+                            <th><?php esc_html_e('Monto Total', 'urbandog'); ?></th>
+                            <th><?php esc_html_e('Método', 'urbandog'); ?></th>
+                            <th><?php esc_html_e('Referencia', 'urbandog'); ?></th>
+                            <th><?php esc_html_e('Comprobante', 'urbandog'); ?></th>
+                            <th><?php esc_html_e('Acciones', 'urbandog'); ?></th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($pending_payments as $booking):
-                            $owner_id = get_post_meta($booking->ID, 'ud_booking_owner_id', true);
-                            $walker_id = get_post_meta($booking->ID, 'ud_booking_walker_id', true);
-                            $price = (float) get_post_meta($booking->ID, 'ud_booking_price', true);
-                            $date = get_post_meta($booking->ID, 'ud_booking_date', true);
+                        <?php foreach ($pending_transactions as $transaction):
+                            $transaction_id = $transaction->ID;
+                            $booking_id = get_post_meta($transaction_id, 'ud_transaction_booking_id', true);
+                            $owner_id = get_post_meta($transaction_id, 'ud_transaction_owner_id', true);
+                            $walker_id = get_post_meta($transaction_id, 'ud_transaction_walker_id', true);
+                            $amount_total = get_post_meta($transaction_id, 'ud_transaction_amount_total', true);
+                            $amount_walker = get_post_meta($transaction_id, 'ud_transaction_amount_walker', true);
+                            $amount_platform = get_post_meta($transaction_id, 'ud_transaction_amount_platform', true);
+                            $method = get_post_meta($transaction_id, 'ud_transaction_method', true);
+                            $reference = get_post_meta($transaction_id, 'ud_transaction_reference', true);
+                            $proof_image = get_post_meta($transaction_id, 'ud_transaction_proof_image', true);
+                            $booking_date = get_post_meta($booking_id, 'ud_booking_date', true);
+
                             $owner = get_userdata((int) $owner_id);
                             $walker = get_userdata((int) $walker_id);
                             ?>
                             <tr>
-                                <td>#
-                                    <?php echo (int) $booking->ID; ?>
+                                <td><strong>#<?php echo (int) $transaction_id; ?></strong></td>
+                                <td><?php echo esc_html($owner ? $owner->display_name : '—'); ?></td>
+                                <td><?php echo esc_html($walker ? $walker->display_name : '—'); ?></td>
+                                <td><?php echo esc_html($booking_date ?: '—'); ?></td>
+                                <td>
+                                    <strong>S/ <?php echo esc_html(number_format($amount_total, 2)); ?></strong>
+                                    <br>
+                                    <small style="color: #666;">
+                                        Paseador: S/ <?php echo esc_html(number_format($amount_walker, 2)); ?> (75%)<br>
+                                        Plataforma: S/ <?php echo esc_html(number_format($amount_platform, 2)); ?> (25%)
+                                    </small>
                                 </td>
                                 <td>
-                                    <?php echo esc_html($owner ? $owner->display_name : '—'); ?>
+                                    <span
+                                        style="display: inline-block; padding: 4px 8px; background: #e0e7ff; color: #3730a3; border-radius: 4px; font-size: 12px; font-weight: 600;">
+                                        <?php echo esc_html(strtoupper($method)); ?>
+                                    </span>
                                 </td>
+                                <td><code><?php echo esc_html($reference ?: '—'); ?></code></td>
                                 <td>
-                                    <?php echo esc_html($walker ? $walker->display_name : '—'); ?>
-                                </td>
-                                <td>
-                                    <?php echo esc_html($date ?: '—'); ?>
-                                </td>
-                                <td>S/.
-                                    <?php echo esc_html(number_format($price, 2)); ?>
-                                </td>
-                                <td>S/.
-                                    <?php echo esc_html(number_format($price * 0.25, 2)); ?>
-                                </td>
-                                <td>
-                                    <form method="post" style="display: inline;">
-                                        <?php wp_nonce_field('ud_payment_confirm'); ?>
-                                        <input type="hidden" name="ud_confirm_booking_id" value="<?php echo (int) $booking->ID; ?>">
-                                        <button type="submit" class="button button-primary">
-                                            <?php esc_html_e('Confirmar Pago', 'urbandog'); ?>
+                                    <?php if ($proof_image): ?>
+                                        <button type="button" class="button ud-view-proof-btn"
+                                            data-image-url="<?php echo esc_url($proof_image); ?>">
+                                            👁️ Ver Comprobante
                                         </button>
-                                    </form>
+                                    <?php else: ?>
+                                        <span style="color: #999;">Sin comprobante</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <div class="ud-payment-actions" style="min-width: 250px;">
+                                        <textarea class="ud-admin-notes"
+                                            placeholder="<?php esc_attr_e('Notas opcionales...', 'urbandog'); ?>"
+                                            style="width: 100%; margin-bottom: 8px; font-size: 12px;" rows="2"></textarea>
+                                        <button type="button" class="button button-primary ud-confirm-payment-btn"
+                                            data-transaction-id="<?php echo (int) $transaction_id; ?>" style="margin-right: 4px;">
+                                            ✅ Confirmar
+                                        </button>
+                                        <button type="button" class="button ud-reject-payment-btn"
+                                            data-transaction-id="<?php echo (int) $transaction_id; ?>"
+                                            style="background: #dc2626; color: white; border-color: #dc2626;">
+                                            ❌ Rechazar
+                                        </button>
+                                        <br>
+                                        <textarea class="ud-rejection-reason"
+                                            placeholder="<?php esc_attr_e('Motivo del rechazo (requerido para rechazar)...', 'urbandog'); ?>"
+                                            style="width: 100%; margin-top: 8px; font-size: 12px; display: none;" rows="2"></textarea>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
             <?php endif; ?>
+
+            <!-- Confirmed Payments (Mark as Paid to Walker) -->
+            <h2 style="margin-top: 40px;">
+                <?php esc_html_e('Pagos Confirmados - Pendientes de Envío al Paseador', 'urbandog'); ?>
+            </h2>
+
+            <?php if (empty($confirmed_transactions)): ?>
+                <div class="notice notice-info">
+                    <p><?php esc_html_e('No hay pagos confirmados pendientes de envío.', 'urbandog'); ?></p>
+                </div>
+            <?php else: ?>
+                <table class="widefat striped">
+                    <thead>
+                        <tr>
+                            <th><?php esc_html_e('ID', 'urbandog'); ?></th>
+                            <th><?php esc_html_e('Paseador', 'urbandog'); ?></th>
+                            <th><?php esc_html_e('Monto Paseador', 'urbandog'); ?></th>
+                            <th><?php esc_html_e('Confirmado', 'urbandog'); ?></th>
+                            <th><?php esc_html_e('Acción', 'urbandog'); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($confirmed_transactions as $transaction):
+                            $transaction_id = $transaction->ID;
+                            $walker_id = get_post_meta($transaction_id, 'ud_transaction_walker_id', true);
+                            $amount_walker = get_post_meta($transaction_id, 'ud_transaction_amount_walker', true);
+                            $confirmed_at = get_post_meta($transaction_id, 'ud_transaction_confirmed_at', true);
+                            $walker = get_userdata((int) $walker_id);
+                            ?>
+                            <tr>
+                                <td><strong>#<?php echo (int) $transaction_id; ?></strong></td>
+                                <td><?php echo esc_html($walker ? $walker->display_name : '—'); ?></td>
+                                <td><strong>S/ <?php echo esc_html(number_format($amount_walker, 2)); ?></strong></td>
+                                <td><?php echo esc_html($confirmed_at ? date('d/m/Y H:i', strtotime($confirmed_at)) : '—'); ?></td>
+                                <td>
+                                    <button type="button" class="button button-primary ud-mark-paid-btn"
+                                        data-transaction-id="<?php echo (int) $transaction_id; ?>">
+                                        💸 Marcar como Pagado al Paseador
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+
+            <!-- Enqueue payment scripts -->
+            <script>
+                // Show/hide rejection reason textarea
+                document.addEventListener('DOMContentLoaded', function () {
+                    document.querySelectorAll('.ud-reject-payment-btn').forEach(function (btn) {
+                        btn.addEventListener('click', function () {
+                            const actions = this.closest('.ud-payment-actions');
+                            const reasonTextarea = actions.querySelector('.ud-rejection-reason');
+                            if (reasonTextarea.style.display === 'none') {
+                                reasonTextarea.style.display = 'block';
+                                reasonTextarea.focus();
+                            }
+                        });
+                    });
+                });
+            </script>
+            <style>
+                .ud-payment-actions {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .widefat th,
+                .widefat td {
+                    vertical-align: top;
+                    padding: 12px;
+                }
+            </style>
         </div>
         <?php
     }

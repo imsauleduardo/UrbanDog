@@ -187,9 +187,9 @@ img {
 }
 
 .header-container .btn-primary {
-    padding-left: 20px;
-    padding-right: 20px;
+    padding: 12px 20px;
     border-radius: 100px;
+    font-weight: 700;
 }
 
 .nav-menu {
@@ -304,6 +304,7 @@ img {
     background: var(--ud-white);
     padding: 0.5rem;
     border-radius: 100px;
+    border: 1px solid var(--ud-border-light);
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     display: flex;
     align-items: center;
@@ -331,6 +332,37 @@ img {
     flex-direction: column;
     text-align: left;
     width: 100%;
+    position: relative;
+}
+
+.ud-autocomplete-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    margin-top: 0.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+    list-style: none;
+    padding: 0;
+    display: none;
+}
+
+.ud-autocomplete-results li {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 0.9375rem;
+    color: #1e293b;
+}
+
+.ud-autocomplete-results li:hover {
+    background-color: #f1f5f9;
 }
 
 .search-label {
@@ -351,6 +383,12 @@ img {
     color: #64748b;
     padding: 0;
     margin-top: 0.125rem;
+}
+
+#hero-distrito-input::placeholder {
+    color: #94a3b8;
+    opacity: 1;
+    /* Firefox */
 }
 
 .btn-search-hero {

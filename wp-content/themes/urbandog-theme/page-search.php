@@ -43,9 +43,13 @@ $distrito = sanitize_text_field($_GET['distrito'] ?? $_GET['location'] ?? '');
         <!-- Results List -->
         <section class="search-results-list">
             <div class="results-count">
-                <?php _e('Buscando paseadores en ', 'urbandog'); ?> <strong>
-                    <?php echo esc_html($distrito ?: 'Lima'); ?>
-                </strong>...
+                <?php if ($distrito): ?>
+                    <?php _e('Buscando paseadores en ', 'urbandog'); ?> <strong>
+                        <?php echo esc_html($distrito); ?>
+                    </strong>...
+                <?php else: ?>
+                    <?php _e('Encuentra al paseador ideal para tu mascota', 'urbandog'); ?>
+                <?php endif; ?>
             </div>
 
             <div id="walker-results">
@@ -156,11 +160,11 @@ $distrito = sanitize_text_field($_GET['distrito'] ?? $_GET['location'] ?? '');
             <div class="modal-section" style="margin-bottom: 12px; padding-bottom: 20px;">
                 <label class="modal-section-label"><?php _e('¿Con qué frecuencia?', 'urbandog'); ?></label>
                 <div class="segmented-control" id="frequency-selector">
-                    <button class="segment active" data-value="once">
+                    <button class="segment" data-value="once">
                         <i data-lucide="calendar" style="width: 16px; height: 16px; margin-right: 8px;"></i>
                         <?php _e('Una vez', 'urbandog'); ?>
                     </button>
-                    <button class="segment" data-value="weekly">
+                    <button class="segment active" data-value="weekly">
                         <i data-lucide="refresh-cw" style="width: 16px; height: 16px; margin-right: 8px;"></i>
                         <?php _e('Repetir semanalmente', 'urbandog'); ?>
                     </button>
@@ -181,8 +185,8 @@ $distrito = sanitize_text_field($_GET['distrito'] ?? $_GET['location'] ?? '');
                         'Sáb' => 'S'
                     ];
                     foreach ($days_map as $label => $short): ?>
-                            <button class="day-segment"
-                                data-day="<?php echo strtolower($label); ?>"><?php echo $label; ?></button>
+                        <button class="day-segment"
+                            data-day="<?php echo strtolower($label); ?>"><?php echo $label; ?></button>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -199,8 +203,8 @@ $distrito = sanitize_text_field($_GET['distrito'] ?? $_GET['location'] ?? '');
             <div class="modal-section">
                 <label class="modal-section-label"><?php _e('¿En qué horario lo necesitas?', 'urbandog'); ?></label>
                 <div class="segmented-control-three" id="time-selector">
-                    <button class="segment" data-value="morning">6am-11am</button>
-                    <button class="segment active" data-value="midday">11am-3pm</button>
+                    <button class="segment active" data-value="morning">6am-11am</button>
+                    <button class="segment" data-value="midday">11am-3pm</button>
                     <button class="segment" data-value="afternoon">3pm-10pm</button>
                 </div>
             </div>
@@ -276,25 +280,25 @@ $distrito = sanitize_text_field($_GET['distrito'] ?? $_GET['location'] ?? '');
                 <label class="modal-section-label"><?php _e('¿De qué tamaño son tus perros?', 'urbandog'); ?></label>
 
                 <div class="size-card-grid">
-                    <div class="size-card" data-size="pequeño">
+                    <div class="size-card" data-size="small">
                         <i data-lucide="dog" style="width: 16px; height: 16px;"></i>
                         <span class="size-name"><?php _e('Pequeño', 'urbandog'); ?></span>
                         <span class="size-weight">0 - 7 kg</span>
                     </div>
-                    <div class="size-card" data-size="mediano">
+                    <div class="size-card" data-size="medium">
                         <i data-lucide="dog" style="width: 22px; height: 22px;"></i>
                         <span class="size-name"><?php _e('Mediano', 'urbandog'); ?></span>
                         <span class="size-weight">7 - 18 kg</span>
                     </div>
-                    <div class="size-card" data-size="grande">
+                    <div class="size-card" data-size="large">
                         <i data-lucide="dog" style="width: 28px; height: 28px;"></i>
                         <span class="size-name"><?php _e('Grande', 'urbandog'); ?></span>
                         <span class="size-weight">18 - 45 kg</span>
                     </div>
-                    <div class="size-card" data-size="gigante">
+                    <div class="size-card" data-size="giant">
                         <i data-lucide="dog" style="width: 34px; height: 34px;"></i>
                         <span class="size-name"><?php _e('Gigante', 'urbandog'); ?></span>
-                        <span class="size-weight">45 kg+</span>
+                        <span class="size-weight">+ 45 kg</span>
                     </div>
                 </div>
             </div>
